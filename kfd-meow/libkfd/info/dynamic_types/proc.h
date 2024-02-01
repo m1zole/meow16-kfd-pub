@@ -19,6 +19,12 @@ struct proc {
 static const struct proc proc_versions[] = {
     // Note: sizes below here are wrong idc
     {
+    }, // iOS 13.0 - 13.4 arm64/arm64e
+    
+    {
+    }, // iOS 13.5 - 13.7 arm64/arm64e
+    
+    {
         .p_list_le_next = 0x0,
         .p_list_le_prev = 0x8,
         .task           = 0x10,

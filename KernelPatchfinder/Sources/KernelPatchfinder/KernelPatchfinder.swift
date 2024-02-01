@@ -663,7 +663,6 @@ open class KernelPatchfinder {
     public lazy var mach_vm_allocate: UInt64? = {
         
         guard let launchdString = cStrSect.addrOf("/sbin/launchd") else {
-            print("no launchd string")
             return nil
         }
         
@@ -717,36 +716,83 @@ open class KernelPatchfinder {
         if cachedResults != nil {
             return cachedResults.unsafelyUnwrapped["pmap_image4_trust_caches"]
         }
-        
-        guard let ppl_handler_table = ppl_handler_table else {
-            return nil
-        }
-        
-        guard var pmap_lookup_in_loaded_trust_caches_internal = constSect.r64(at: ppl_handler_table + 0x148) else {
-            return nil
-        }
-        
-        if (pmap_lookup_in_loaded_trust_caches_internal >> 48) == 0x8011 {
-            // Relocation, on-disk kernel
-            pmap_lookup_in_loaded_trust_caches_internal &= 0xFFFFFFFFFFFF
-            pmap_lookup_in_loaded_trust_caches_internal += 0xFFFFFFF007004000
+        if(isarm64e) {
+            guard let ppl_handler_table = ppl_handler_table else {
+                return nil
+            }
+            
+            guard var pmap_lookup_in_loaded_trust_caches_internal = constSect.r64(at: ppl_handler_table + 0x148) else {
+                return nil
+            }
+            
+            if (pmap_lookup_in_loaded_trust_caches_internal >> 48) == 0x8011 {
+                // Relocation, on-disk kernel
+                pmap_lookup_in_loaded_trust_caches_internal &= 0xFFFFFFFFFFFF
+                pmap_lookup_in_loaded_trust_caches_internal += 0xFFFFFFF007004000
+            } else {
+                // Probably live kernel
+                // Strip pointer authentication code
+                pmap_lookup_in_loaded_trust_caches_internal |= 0xFFFFFF8000000000
+            }
+            
+            var pmap_image4_trust_caches: UInt64?
+            for i in 1..<20 {
+                let pc = pmap_lookup_in_loaded_trust_caches_internal + UInt64(i * 4)
+                let emu = AArch64Instr.Emulate.ldr(pplText.instruction(at: pc) ?? 0, pc: pc)
+                if emu != nil {
+                    pmap_image4_trust_caches = emu
+                    break
+                }
+            }
+            
+            return pmap_image4_trust_caches
         } else {
-            // Probably live kernel
-            // Strip pointer authentication code
-            pmap_lookup_in_loaded_trust_caches_internal |= 0xFFFFFF8000000000
-        }
-        
-        var pmap_image4_trust_caches: UInt64?
-        for i in 1..<20 {
-            let pc = pmap_lookup_in_loaded_trust_caches_internal + UInt64(i * 4)
-            let emu = AArch64Instr.Emulate.ldr(pplText.instruction(at: pc) ?? 0, pc: pc)
-            if emu != nil {
-                pmap_image4_trust_caches = emu
-                break
+            if #available(iOS 16.0, *) {
+                var val:UInt64 = 0xd0
+                if #available(iOS 16.4, *) {
+                    val = 0x78
+                }
+                
+                guard let ref = textExec.findNextXref(to: cStrSect.addrOf("image4 interface not available @%s:%d") ?? 0, optimization: .noBranches) else {
+                    return nil
+                }
+                
+                var pc:UInt64 = ref - val
+                val = 0
+                while(val < 0x20) {
+                    var ret = AArch64Instr.Emulate.adrpLdr(adrp: textExec.instruction(at: pc + val) ?? 0, ldr: textExec.instruction(at: pc + val + 0x4) ?? 0, pc: pc + val)
+                    if(ret != nil) {
+                        return (ret ?? 0) - 0x8
+                    }
+                    val += 4
+                }
+                return nil
+            } else {
+                guard let ref = textExec.findNextXref(to: cStrSect.addrOf("attempted to set the local signing public key multiple times @%s:%d") ?? 0, optimization: .noBranches) else {
+                    return nil
+                }
+                
+                var i:  UInt64 = 0
+                var pc: UInt64 = 0
+                while(i < 0x200) {
+                    if textExec.instruction(at: ref - i) != 0xD10083FF {
+                        i += 4
+                    } else {
+                        pc = ref - i
+                    }
+                }
+                
+                var j:  UInt64 = 0
+                while(j < 0x20) {
+                    var ret = AArch64Instr.Emulate.adrpAdd(adrp: textExec.instruction(at: pc + j) ?? 0, add: textExec.instruction(at: pc + j + 0x4) ?? 0, pc: pc + j)
+                    if(ret != nil) {
+                        return (ret ?? 0) - 0x8
+                    }
+                    j += 4
+                }
+                return nil
             }
         }
-        
-        return pmap_image4_trust_caches
     }()
     
     /// Get the EL level the kernel runs at

@@ -264,7 +264,7 @@ static kern_return_t
 kread_buf_kfd(kaddr_t addr, void *buf, size_t sz) {
     if(kfd_ == 0)
         return KERN_FAILURE;
-    kread_sem_open_kread(kfd_, addr, buf, sz);
+    kread_kfd((uint64_t)kfd_, addr, buf, sz);
     return KERN_SUCCESS;
 }
 

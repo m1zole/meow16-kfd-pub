@@ -24,7 +24,13 @@ static const struct kqworkloop kqworkloop_versions[] = {
         .kqwl_owner     = 0xd0,
         .kqwl_dynamicid = 0xe8,
         .object_size    = 0x108
-    }, // iOS 14.0 - 14.5 arm64/arm64e
+    }, // iOS 13.0 - 13.4 arm64/arm64e
+    
+    {
+    }, // iOS 13.5 - 13.7 arm64/arm64e
+    
+    {
+    }, // iOS 14.0 - 14.4 arm64/arm64e
     
     {
         .kqwl_state     = 0x10,

@@ -19,6 +19,11 @@ struct IOSurface {
 };
 
 static const struct IOSurface IOSurface_versions[] = {
+    {
+    }, // iOS 13.0 - 13.4 arm64/arm64e
+    
+    {
+    }, // iOS 13.5 - 13.7 arm64/arm64e
     
     {
         .isa                    = 0x0,

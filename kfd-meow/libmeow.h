@@ -41,6 +41,9 @@ extern uint64_t container_init;
 extern uint64_t iogettargetand;
 extern uint64_t empty_kdata;
 extern uint64_t mach_vm_alloc;
+extern uint64_t trust_caches;
+extern uint64_t ml_phys_read;
+extern uint64_t ml_phys_write;
 
 void set_offsets(void);
 
@@ -48,6 +51,16 @@ uint64_t proc_get_proc_ro(uint64_t proc_ptr);
 uint64_t proc_ro_get_ucred(uint64_t proc_ro_ptr);
 uint64_t proc_get_ucred(uint64_t proc_ptr);
 
-int meow(void);
+uint64_t kread64(uint64_t va);
+uint32_t kread32(uint64_t va);
+uint16_t kread16(uint64_t va);
+uint8_t kread8(uint64_t va);
+void kwrite64(uint64_t va, uint64_t val);
+void kwrite32(uint64_t va, uint32_t val);
+void kwrite16(uint64_t va, uint16_t val);
+void kwrite8(uint64_t va, uint8_t val);
+
+void kreadbuf(uint64_t va, void* ua, size_t size);
+void kwritebuf(uint64_t va, const void* ua, size_t size);
 
 #endif /* libmeow_h */

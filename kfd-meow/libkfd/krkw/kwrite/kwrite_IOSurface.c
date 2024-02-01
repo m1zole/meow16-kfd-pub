@@ -12,7 +12,7 @@ io_connect_t g_surfaceConnect = 0;
 
 void kwrite_IOSurface_init(struct kfd* kfd)
 {
-    if(kfd->info.env.vid <= 7)
+    if(kfd->info.env.vid <= 9)
         return;
     
     kfd->kwrite.krkw_maximum_id = 0x4000;
@@ -28,7 +28,7 @@ void kwrite_IOSurface_init(struct kfd* kfd)
 
 void kwrite_IOSurface_allocate(struct kfd* kfd, uint64_t id)
 {
-    if(kfd->info.env.vid <= 7)
+    if(kfd->info.env.vid <= 9)
         return;
     
     struct iosurface_obj *objectStorage = (struct iosurface_obj *)kfd->kwrite.krkw_method_data;
@@ -44,7 +44,7 @@ void kwrite_IOSurface_allocate(struct kfd* kfd, uint64_t id)
 
 bool kwrite_IOSurface_search(struct kfd* kfd, uint64_t object_uaddr)
 {
-    if(kfd->info.env.vid <= 7)
+    if(kfd->info.env.vid <= 9)
         return true;
     
     uint32_t magic = dynamic_uget(IOSurface, PixelFormat, object_uaddr);
@@ -97,7 +97,7 @@ void kwrite_IOSurface_kwrite_u64(struct kfd* kfd, uint64_t kaddr, uint64_t new_v
     uint64_t iosurface_uaddr = 0;
     struct iosurface_obj krwObject = { 0 };
     
-    if(kfd->info.env.vid <= 7) {
+    if(kfd->info.env.vid <= 9) {
         iosurface_uaddr = kfd->kread.krkw_object_uaddr;
         struct iosurface_obj *objectStorage = (struct iosurface_obj *)kfd->kread.krkw_method_data;
         krwObject = objectStorage[kfd->kread.krkw_object_id];

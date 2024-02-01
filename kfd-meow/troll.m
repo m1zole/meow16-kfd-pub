@@ -22,13 +22,14 @@ NSString* find_tips(void) {
 }
 
 void TrollStoreinstall(void) {
+    usleep(5000);
     set_offsets();
     
     setup_client();
     
     usleep(5000);
     printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
-    if(isAvailable() >= 4) {
+    if(isAvailable() >= 6) {
         eary_kcall(proc_set_ucred, our_proc, kern_ucred, 0, 0, 0, 0, 0);
         
         usleep(5000);

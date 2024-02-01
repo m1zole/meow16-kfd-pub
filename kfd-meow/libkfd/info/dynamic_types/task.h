@@ -18,6 +18,12 @@ struct task {
 static const struct task task_versions[] = {
     // Note: sizes below here are wrong idc
     {
+    }, // iOS 13.0 - 13.4 arm64/arm64e
+    
+    {
+    }, // iOS 13.5 - 13.7 arm64/arm64e
+    
+    {
         .map            = 0x28,
         .threads_next   = 0x58,
         .threads_prev   = 0x60,

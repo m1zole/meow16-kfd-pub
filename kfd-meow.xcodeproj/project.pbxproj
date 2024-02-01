@@ -19,13 +19,14 @@
 		86A48AC32B2B4A0A005D1639 /* physpuppet.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48AB72B2B4A0A005D1639 /* physpuppet.c */; };
 		86A48AC42B2B4A0A005D1639 /* krkw.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48AB82B2B4A0A005D1639 /* krkw.c */; };
 		86A48AC52B2B4A0A005D1639 /* libkfd.m in Sources */ = {isa = PBXBuildFile; fileRef = 86A48ABB2B2B4A0A005D1639 /* libkfd.m */; };
-		86A48AC82B2B4A89005D1639 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86A48AC72B2B4A89005D1639 /* IOKit.framework */; };
 		86A48ACB2B2B5451005D1639 /* kread_sem_open.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48AC92B2B5451005D1639 /* kread_sem_open.c */; };
 		D5123A022B4C40B10040BF9D /* pplrw.m in Sources */ = {isa = PBXBuildFile; fileRef = D5123A012B4C40B10040BF9D /* pplrw.m */; };
 		D5123A062B4C41040040BF9D /* IOSurface_Primitives.m in Sources */ = {isa = PBXBuildFile; fileRef = D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */; };
 		D51A545F2B65FE5000F7EFDC /* pplrw-by-xina.m in Sources */ = {isa = PBXBuildFile; fileRef = D51A545D2B65FE5000F7EFDC /* pplrw-by-xina.m */; };
 		D51A54622B66653D00F7EFDC /* troll.m in Sources */ = {isa = PBXBuildFile; fileRef = D51A54612B66653D00F7EFDC /* troll.m */; };
 		D51A54872B66BB9A00F7EFDC /* PersistenceHelper_Embedded in Resources */ = {isa = PBXBuildFile; fileRef = D51A54862B66BB9A00F7EFDC /* PersistenceHelper_Embedded */; };
+		D51A54922B6BCE9E00F7EFDC /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86A48AC72B2B4A89005D1639 /* IOKit.framework */; };
+		D51A54982B6F53A200F7EFDC /* meow.m in Sources */ = {isa = PBXBuildFile; fileRef = D51A54972B6F53A200F7EFDC /* meow.m */; };
 		D54990D72B42C7C3003B3486 /* landa.c in Sources */ = {isa = PBXBuildFile; fileRef = D54990D62B42C7C3003B3486 /* landa.c */; };
 		D56FB6A02B499B0C00A48CA4 /* kfd-meow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D56FB69F2B499B0C00A48CA4 /* kfd-meow.swift */; };
 		D56FB6A22B499B7000A48CA4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D56FB6A12B499B7000A48CA4 /* ContentView.swift */; };
@@ -109,6 +110,9 @@
 		D51A546C2B66961000F7EFDC /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = usr/lib/libarchive.tbd; sourceTree = SDKROOT; };
 		D51A54742B669D6C00F7EFDC /* MobileContainerManager.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MobileContainerManager.framework; sourceTree = "<group>"; };
 		D51A54862B66BB9A00F7EFDC /* PersistenceHelper_Embedded */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PersistenceHelper_Embedded; sourceTree = SOURCE_ROOT; };
+		D51A548E2B6BC81500F7EFDC /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
+		D51A54962B6F513F00F7EFDC /* meow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = meow.h; sourceTree = "<group>"; };
+		D51A54972B6F53A200F7EFDC /* meow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = meow.m; sourceTree = "<group>"; };
 		D54990D52B42C7C3003B3486 /* landa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = landa.h; sourceTree = "<group>"; };
 		D54990D62B42C7C3003B3486 /* landa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = landa.c; sourceTree = "<group>"; };
 		D56FB69F2B499B0C00A48CA4 /* kfd-meow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "kfd-meow.swift"; sourceTree = "<group>"; };
@@ -144,9 +148,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D5D2DDD22B4835F100B62BED /* CoreServices.framework in Frameworks */,
-				86A48AC82B2B4A89005D1639 /* IOKit.framework in Frameworks */,
 				D5D2DDD02B4835E800B62BED /* libMobileGestalt.tbd in Frameworks */,
 				D5D2DDCE2B4835E000B62BED /* libz.tbd in Frameworks */,
+				D51A54922B6BCE9E00F7EFDC /* IOKit.framework in Frameworks */,
 				D5D2DDB52B4832B600B62BED /* KernelPatchfinder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,6 +182,8 @@
 				D5BF82C02B50242F00C02D17 /* kpf */,
 				86A48A872B2B4A0A005D1639 /* libkfd.h */,
 				86A48ABB2B2B4A0A005D1639 /* libkfd.m */,
+				D51A54962B6F513F00F7EFDC /* meow.h */,
+				D51A54972B6F53A200F7EFDC /* meow.m */,
 				868BDAB22B2E14410017CB10 /* libmeow.h */,
 				868BDAB02B2E14260017CB10 /* libmeow.m */,
 				868BDAB82B2E1A840017CB10 /* meowfinder.h */,
@@ -324,6 +330,7 @@
 		86A48AC62B2B4A89005D1639 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D51A548E2B6BC81500F7EFDC /* IOKit.framework */,
 				D51A54742B669D6C00F7EFDC /* MobileContainerManager.framework */,
 				D51A546C2B66961000F7EFDC /* libarchive.tbd */,
 				D56FB6A62B4A66DD00A48CA4 /* CoreFoundation.framework */,
@@ -430,6 +437,7 @@
 				D5123A062B4C41040040BF9D /* IOSurface_Primitives.m in Sources */,
 				D56FB6A22B499B7000A48CA4 /* ContentView.swift in Sources */,
 				D56FB6A02B499B0C00A48CA4 /* kfd-meow.swift in Sources */,
+				D51A54982B6F53A200F7EFDC /* meow.m in Sources */,
 				86A48AC42B2B4A0A005D1639 /* krkw.c in Sources */,
 				D5BF82DE2B53AD7400C02D17 /* kwrite_dup.c in Sources */,
 				86A48ABD2B2B4A0A005D1639 /* perf.m in Sources */,

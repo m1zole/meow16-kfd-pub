@@ -64,6 +64,9 @@ import KernelPatchfinder
     @objc public func find_mach_vm_allocate() -> UInt64 {
         return KernelPatchfinder.running?.mach_vm_allocate ?? 0
     }
+    @objc public func find_pmap_image4_trust_caches() -> UInt64 {
+        return KernelPatchfinder.running?.pmap_image4_trust_caches ?? 0x0
+    }
     @objc public func find_ITK_SPACE() -> UInt64 {
         return KernelPatchfinder.running?.ITK_SPACE ?? 0x0
     }

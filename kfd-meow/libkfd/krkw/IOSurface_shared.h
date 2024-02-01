@@ -110,7 +110,7 @@ typedef struct {
 
 #include <IOSurface/IOSurfaceRef.h>
 
-#define IOSurfaceLockResultSize ((kfd->info.env.vid <= 7) ? 0xF60 : 0xA68 )
+#define IOSurfaceLockResultSize ((kfd->info.env.vid <= 9) ? 0xF60 : 0xA68 )
 
 #define kOSSerializeBinarySignature        0x000000D3
 #define kOSSerializeIndexedBinarySignature 0x000000D4

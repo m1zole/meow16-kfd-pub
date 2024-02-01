@@ -47,6 +47,7 @@ struct ContentView: View {
                                     result = kclose_bridge(result)
                                     if (result == 0) {
                                         message = message + "[*] kclosed\n"
+                                        print("done!")
                                     }
                                 }
                             }
@@ -62,19 +63,14 @@ struct ContentView: View {
                 Section {
                     HStack {
                         Button("finder") {
-                            message = "kttr:                    " + String(KernelPatchfinder.running?.ktrr ?? 0x0, radix: 16)
-                            message = message + "\ncdevsw:                  " + String(KernelPatchfinder.running?.cdevsw ?? 0x0, radix: 16)
-                            message = message + "\nptov_table:              " + String(KernelPatchfinder.running?.ptov_data?.table ?? 0x0, radix: 16)
-                            message = message + "\nphysBase:                " + String(KernelPatchfinder.running?.ptov_data?.physBase ?? 0x0, radix: 16)
-                            message = message + "\nphysSize:                " + String(UInt64(KernelPatchfinder.running?.ptov_data?.physBase ?? 0x0) + 0x8, radix: 16)
-                            message = message + "\nvirtBase:                " + String(KernelPatchfinder.running?.ptov_data?.virtBase ?? 0x0, radix: 16)
-                            message = message + "\nvn_kqfilter:             " + String(KernelPatchfinder.running?.vn_kqfilter ?? 0x0, radix: 16)
-                            message = message + "\nperf_devices:            " + String(KernelPatchfinder.running?.perfmon_devices ?? 0x0, radix: 16)
-                            message = message + "\nperf_dev_open:           " + String(KernelPatchfinder.running?.perfmon_dev_open ?? 0x0, radix: 16)
-                            message = message + "\nvm_pages:                " + String(KernelPatchfinder.running?.vm_pages ?? 0x0, radix: 16)
-                            message = message + "\nvm_page_array_beginning: " + String(KernelPatchfinder.running?.vm_page_array.beginning ?? 0x0, radix: 16)
-                            message = message + "\nvm_page_array_ending:    " + String(KernelPatchfinder.running?.vm_page_array.ending ?? 0x0, radix: 16)
-                            message = message + "\nvm_first_phys_ppnum:     " + String(UInt64(KernelPatchfinder.running?.vm_page_array.ending ?? 0x0) + 0x8, radix: 16)
+                            print(String(KernelPatchfinder.running?.baseAddress ?? 0x0, radix: 16))
+                            print(String(KernelPatchfinder.running?.ptov_data?.table ?? 0x0, radix: 16))
+                            print(String(KernelPatchfinder.running?.ptov_data?.physBase ?? 0x0, radix: 16))
+                            print(String(UInt64(KernelPatchfinder.running?.ptov_data?.physBase ?? 0x0) + 0x8, radix: 16))
+                            print(String(KernelPatchfinder.running?.ptov_data?.virtBase ?? 0x0, radix: 16))
+                            print(String(KernelPatchfinder.running?.pmap_image4_trust_caches ?? 0x0, radix: 16))
+                            print(String(KernelPatchfinder.running?.ml_phys_write_data ?? 0x0, radix: 16))
+                            print(String(KernelPatchfinder.running?.ml_phys_read_data ?? 0x0, radix: 16))
                         }.disabled(result != 0 || overwritten).frame(minWidth: 0, maxWidth: .infinity)
                         Button(action) {
                         }.disabled(result == 0 && !overwritten).frame(minWidth: 0, maxWidth: .infinity)
