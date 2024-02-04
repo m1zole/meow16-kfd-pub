@@ -17,7 +17,7 @@ uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
     if(debug == 0) {
         if(isarm64e()) {
             sleep(1);
-            //test_pplrw();
+            test_pplrw();
         } else {
             sleep(1);
             meow();
