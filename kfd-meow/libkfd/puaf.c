@@ -39,6 +39,8 @@ void puaf_init(struct kfd* kfd, uint64_t exploit_type)
         
         if(kfd->info.env.vid <= 9 && !isarm64e()) {
             kfd->puaf.number_of_puaf_pages = 128;
+        } else if(kfd->info.env.vid >= 10 && !isarm64e()) {
+            kfd->puaf.number_of_puaf_pages = 1024;
         } else {
             kfd->puaf.number_of_puaf_pages = 2048;
         }

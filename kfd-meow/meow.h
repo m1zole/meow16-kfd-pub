@@ -14,6 +14,7 @@
 #include "pplrw.h"
 #include "libkfd.h"
 #include "libmeow.h"
+#include "IOSurface_Primitives.h"
 
 int meow(void);
 #endif /* meow_h */

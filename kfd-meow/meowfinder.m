@@ -23,145 +23,6 @@ static uint64_t find_prev_insn_kread(uint64_t vaddr, uint32_t num, uint32_t insn
     return 0;
 }
 
-static unsigned char *
-boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
-                           const unsigned char* needle,   size_t nlen)
-{
-    size_t last, scan = 0;
-    size_t bad_char_skip[UCHAR_MAX + 1]; /* Officially called:
-                                          * bad character shift */
-
-    /* Sanity checks on the parameters */
-    if (nlen <= 0 || !haystack || !needle)
-        return NULL;
-
-    /* ---- Preprocess ---- */
-    /* Initialize the table to default value */
-    /* When a character is encountered that does not occur
-     * in the needle, we can safely skip ahead for the whole
-     * length of the needle.
-     */
-    for (scan = 0; scan <= UCHAR_MAX; scan = scan + 1)
-        bad_char_skip[scan] = nlen;
-
-    /* C arrays have the first byte at [0], therefore:
-     * [nlen - 1] is the last byte of the array. */
-    last = nlen - 1;
-
-    /* Then populate it with the analysis of the needle */
-    for (scan = 0; scan < last; scan = scan + 1)
-        bad_char_skip[needle[scan]] = last - scan;
-
-    /* ---- Do the matching ---- */
-
-    /* Search the haystack, while the needle can still be within it. */
-    while (hlen >= nlen)
-    {
-        /* scan from the end of the needle */
-        for (scan = last; haystack[scan] == needle[scan]; scan = scan - 1)
-            if (scan == 0) /* If the first byte matches, we've found it. */
-                return (void *)haystack;
-
-        /* otherwise, we need to skip some bytes and start again.
-           Note that here we are getting the skip value based on the last byte
-           of needle, no matter where we didn't match. So if needle is: "abcd"
-           then we are skipping based on 'd' and that value will be 4, and
-           for "abcdd" we again skip on 'd' but the value will be only 1.
-           The alternative of pretending that the mismatched character was
-           the last character is slower in the normal case (E.g. finding
-           "abcd" in "...azcd..." gives 4 by using 'd' but only
-           4-2==2 using 'z'. */
-        hlen     -= bad_char_skip[haystack[last]];
-        haystack += bad_char_skip[haystack[last]];
-    }
-
-    return NULL;
-}
-
-uint64_t bof64(uint64_t ptr) {
-    for (; ptr >= 0; ptr -= 4) {
-        uint32_t op;
-        kreadbuf_kfd((uint64_t)ptr, &op, 4);
-        if ((op & 0xffc003ff) == 0x910003FD) {
-            unsigned delta = (op >> 10) & 0xfff;
-            if ((delta & 0xf) == 0) {
-                uint64_t prev = ptr - ((delta >> 4) + 1) * 4;
-                uint32_t au;
-                kreadbuf_kfd((uint64_t)prev, &au, 4);
-                if ((au & 0xffc003e0) == 0xa98003e0) {
-                    return prev;
-                }
-                while (ptr > 0) {
-                    ptr -= 4;
-                    kreadbuf_kfd((uint64_t)ptr, &au, 4);
-                    if ((au & 0xffc003ff) == 0xD10003ff && ((au >> 10) & 0xfff) == delta + 0x10) {
-                        return ptr;
-                    }
-                    if ((au & 0xffc003e0) != 0xa90003e0) {
-                        ptr += 4;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-static uint64_t search_proc_set_ucred_kread16(uint64_t vaddr, uint64_t size) {
-    vaddr += 0x400000; // maybe
-    
-    for(uint64_t i = 0; i < (size - 0x400000); i += 4) {
-        if(kread32_kfd(vaddr + i + 0) == 0x910023e3) { // add x3, sp, #0x8
-            if(kread32_kfd(vaddr + i + 4) == 0x528000a0) { // mov w0, #0x5
-                if(kread32_kfd(vaddr + i + 8) == 0x52800402) { // mov w2, #0x20
-                    if(kread32_kfd(vaddr + i + 12) == 0x52800104) { // mov w4, #0x8
-                        if((kread32_kfd(vaddr + i + 16) & 0xfc000000) == 0x94000000) { // bl _xxx
-                            // pongoOS
-                            // Most reliable marker of a stack frame seems to be "add x29, sp, 0x...".
-                            uint64_t frame = find_prev_insn_kread(vaddr + i, 2000, 0x910003fd, 0xff8003ff);
-                            if(frame) {
-                                // Now find the insn that decrements sp. This can be either
-                                // "stp ..., ..., [sp, -0x...]!" or "sub sp, sp, 0x...".
-                                // Match top bit of imm on purpose, since we only want negative offsets.
-                                uint64_t start = find_prev_insn_kread(frame, 10, 0xa9a003e0, 0xffe003e0);
-                                if(start) {
-                                    return start;
-                                }
-                                else {
-                                    start = find_prev_insn_kread(frame, 10, 0xd10003ff, 0xff8003ff);
-                                    if(start) {
-                                        return start;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-static uint64_t search_proc_set_ucred_kread15(uint64_t vaddr, uint64_t size) {
-    vaddr += 0x300000;
-    const uint8_t data[16] = { 0xa0, 0x00, 0x80, 0x52, 0xe1, 0x03, 0x02, 0xaa, 0x02, 0x04, 0x80, 0x52, 0x04, 0x01, 0x80, 0x52 };
-    int current_offset = 0;
-    while (current_offset < size) {
-        uint8_t* buffer = malloc(0x1000);
-        kreadbuf_kfd(vaddr + current_offset, buffer, 0x1000);
-        uint8_t *str;
-        str = boyermoore_horspool_memmem(buffer, 0x1000, data, sizeof(data));
-        if (str) {
-            uint64_t bof = bof64(str - buffer + vaddr + current_offset);
-            return bof;
-        }
-        current_offset += 0x1000;
-    }
-    return 0;
-}
-
 static uint64_t search_add_x0_x0_0x40_kread(uint64_t vaddr, uint64_t size) {
     vaddr += 0x20000;
     for(uint64_t i = 0; i < (size - 0x400000); i += 4)
@@ -274,6 +135,38 @@ static uint64_t search_ml_phys_write_data_kread(uint64_t vaddr, uint64_t size) {
     return 0;
 }
 
+//0xFFC301D1 0xFA6702A9 0xF85F03A9 0xF65704A9 0xF44F05A9
+//0xD101C3FF 0xA90267FA 0xA9035FF8 0xA90457F6 0xA9054FF4
+
+//0xFD7B06A9 0xFD830191 0xF60300AA 0x17FC4ED3 0x0840238B
+//0xA9067BFD 0x910183FD 0xAA0003F6 0xD34EFC17 0x8B234008
+static uint64_t search_ml_phys_write_data_kread17(uint64_t vaddr, uint64_t size) {
+    for(uint64_t i = 0; i < (size - 0x400000); i += 4) {
+        if(kread32_kfd(vaddr + i + 0) == 0xD101C3FF) {
+            if(kread32_kfd(vaddr + i + 4) == 0xA90267FA) {
+                if(kread32_kfd(vaddr + i + 8) == 0xA9035FF8) {
+                    if(kread32_kfd(vaddr + i + 12) == 0xA90457F6) {
+                        if(kread32_kfd(vaddr + i + 16) == 0xA9054FF4) {
+                            if(kread32_kfd(vaddr + i + 20) == 0xA9067BFD) {
+                                if(kread32_kfd(vaddr + i + 24) == 0x910183FD) {
+                                    if(kread32_kfd(vaddr + i + 28) == 0xAA0003F6) {
+                                        if(kread32_kfd(vaddr + i + 32) == 0xD34EFC17) {
+                                            if(kread32_kfd(vaddr + i + 36) == 0x8B234008) {
+                                                return vaddr + i;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 void offsetfinder64_kread(void)
 {
     if(!kernel_base) return;
@@ -352,19 +245,19 @@ void offsetfinder64_kread(void)
         add_x0_x0_0x40 = search_add_x0_x0_0x40_kread(text_exec_addr, text_exec_size);
     }
     if(isAvailable() >= 10) {
-        proc_set_ucred = search_proc_set_ucred_kread16(text_exec_addr, text_exec_size);
         container_init = search_container_init_kread(text_exec_addr, text_exec_size);
         iogettargetand = search_iosurface_trapforindex_kread(text_exec_addr, text_exec_size);
         printf("container_init : %016llx\n", container_init);
         printf("iogettargetand : %016llx\n", iogettargetand);
-    } else if(isAvailable() >= 6) {
-        proc_set_ucred = search_proc_set_ucred_kread15(text_exec_addr, text_exec_size);
-        printf("proc_set_ucred : %016llx\n", proc_set_ucred);
+    }
+    if(isAvailable() >= 16) {
+        ml_phys_write  = search_ml_phys_write_data_kread17(text_exec_addr, text_exec_size);
+    } else {
+        ml_phys_write  = search_ml_phys_write_data_kread(text_exec_addr, text_exec_size);
     }
     
     empty_kdata    = data_data_addr + 0x1600;
     ml_phys_read   = search_ml_phys_read_data_kread(text_exec_addr, text_exec_size);
-    ml_phys_write  = search_ml_phys_write_data_kread(text_exec_addr, text_exec_size);
     
     printf("add_x0_x0_0x40 : %016llx\n", add_x0_x0_0x40);
     printf("empty_kdata    : %016llx\n", empty_kdata);
@@ -376,4 +269,7 @@ void Fugu15KPF(void) {
     objcbridge *obj = [[objcbridge alloc] init];
     mach_vm_alloc = [obj find_mach_vm_allocate];
     trust_caches  = [obj find_pmap_image4_trust_caches];
+    
+    printf("mach_vm_alloc  : %016llx\n", mach_vm_alloc);
+    printf("trust_caches   : %016llx\n", trust_caches);
 }

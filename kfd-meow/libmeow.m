@@ -26,7 +26,6 @@ uint64_t data__gVirtBase = 0;
 uint64_t data__gPhysBase = 0;
 
 uint64_t add_x0_x0_0x40 = 0;
-uint64_t proc_set_ucred = 0;
 uint64_t container_init = 0;
 uint64_t iogettargetand = 0;
 uint64_t empty_kdata    = 0;
@@ -65,13 +64,13 @@ uint64_t kread64_phys(uint64_t pa)
         uint64_t u64;
     } u;
 
-    u.u32[0] = (uint32_t)eary_kcall(ml_phys_read, pa, 4, 0, 0, 0, 0, 0);;
-    u.u32[1] = (uint32_t)eary_kcall(ml_phys_read, pa+4, 4, 0, 0, 0, 0, 0);
+    u.u32[0] = (uint32_t)ealry_kcall(ml_phys_read, pa, 4, 0, 0, 0, 0, 0);;
+    u.u32[1] = (uint32_t)ealry_kcall(ml_phys_read, pa+4, 4, 0, 0, 0, 0, 0);
     return u.u64;
 }
 
 void kwrite64_phys(uint64_t pa, uint64_t value) {
-    eary_kcall(ml_phys_write, pa, value, 8, 0, 0, 0, 0);
+    ealry_kcall(ml_phys_write, pa, value, 8, 0, 0, 0, 0);
 }
 
 uint64_t kread64(uint64_t va) {
@@ -222,6 +221,15 @@ void kwritebuf(uint64_t va, const void* ua, size_t size) {
     }
 }
 
+uint64_t kreadptr(uint64_t va) {
+    uint64_t ptr = kread64(va);
+    if ((ptr >> 55) & 1) {
+        return ptr | 0xFFFFFF8000000000;
+    }
+    
+    return ptr;
+}
+
 /*---- proc ----*/
 uint64_t proc_get_proc_ro(uint64_t proc_ptr) {
     if(isAvailable() >= 10)
@@ -233,8 +241,112 @@ uint64_t proc_ro_get_ucred(uint64_t proc_ro_ptr) {
     return kread64_kfd(proc_ro_ptr + 0x20);
 }
 
+void proc_ro_set_ucred(uint64_t proc_ro_ptr, uint64_t ucred_ptr) {
+    return kwrite64(proc_ro_ptr + 0x20, ucred_ptr);
+}
+
 uint64_t proc_get_ucred(uint64_t proc_ptr) {
     if(isAvailable() <= 5)
-        return kread64_ptr_kfd(proc_ptr + off_proc_ucred);
+        return kread64_ptr_kfd(proc_ptr + 0xd8);
     return proc_ro_get_ucred(proc_get_proc_ro(proc_ptr));
+}
+
+void proc_set_ucred(uint64_t proc_ptr, uint64_t ucred_ptr) {
+    if (isAvailable() <= 5)
+        return kwrite64(proc_ptr + 0xd8, ucred_ptr);
+    return proc_ro_set_ucred(proc_get_proc_ro(proc_ptr), ucred_ptr);
+}
+
+uint32_t proc_get_csflags(uint64_t proc) {
+    if (isAvailable() <= 5)
+        return kread32_kfd(proc + 0x300);
+    uint64_t proc_ro = proc_get_proc_ro(proc);
+    return kread32_kfd(proc_ro + 0x1c);
+}
+
+void proc_set_csflags(uint64_t proc, uint32_t csflags) {
+    if (isAvailable() <= 5)
+        return kwrite32(proc + 0x300, csflags);
+    uint64_t proc_ro = proc_get_proc_ro(proc);
+    return kwrite32(proc_ro + 0x1c, csflags);
+}
+
+uint32_t proc_get_svuid(uint64_t proc_ptr) {
+    if (isAvailable() <= 5)
+        return kread32_kfd(proc_ptr + 0x3c);
+    return kread32_kfd(proc_ptr + 0x44);
+}
+
+void proc_set_svuid(uint64_t proc_ptr, uid_t svuid) {
+    if (isAvailable() <= 5)
+        return kwrite32(proc_ptr + 0x3c, svuid);
+    return kwrite32(proc_ptr + 0x44, svuid);
+}
+
+uint32_t proc_get_svgid(uint64_t proc_ptr) {
+    if (isAvailable() <= 5)
+        return kread32_kfd(proc_ptr + 0x40);
+    return kread32_kfd(proc_ptr + 0x48);
+}
+
+void proc_set_svgid(uint64_t proc_ptr, uid_t svgid) {
+    if (isAvailable() <= 5)
+        return kwrite32(proc_ptr + 0x40, svgid);
+    return kwrite32(proc_ptr + 0x48, svgid);
+}
+
+uint32_t proc_get_p_flag(uint64_t proc_ptr) {
+    if (isAvailable() <= 5)
+        return kread32_kfd(proc_ptr + 0x1bc);
+    return kread32_kfd(proc_ptr + 0x264);
+}
+
+void proc_set_p_flag(uint64_t proc_ptr, uint32_t p_flag) {
+    if (isAvailable() <= 5)
+        return kwrite32(proc_ptr + 0x1bc, p_flag);
+    return kwrite32(proc_ptr + 0x264, p_flag);
+}
+
+uint32_t ucred_get_uid(uint64_t ucred_ptr) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kread32_kfd(cr_posix_ptr + 0x0);
+}
+
+void ucred_set_uid(uint64_t ucred_ptr, uint32_t uid) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kwrite32(cr_posix_ptr + 0x0, uid);
+}
+
+uint32_t ucred_get_svuid(uint64_t ucred_ptr) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kread32_kfd(cr_posix_ptr + 0x8);
+}
+
+void ucred_set_svuid(uint64_t ucred_ptr, uint32_t svuid) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kwrite32(cr_posix_ptr + 0x8, svuid);
+}
+
+uint32_t ucred_get_cr_groups(uint64_t ucred_ptr) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kread32_kfd(cr_posix_ptr + 0x10);
+}
+
+void ucred_set_cr_groups(uint64_t ucred_ptr, uint32_t cr_groups) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kwrite32(cr_posix_ptr + 0x10, cr_groups);
+}
+
+uint32_t ucred_get_svgid(uint64_t ucred_ptr) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kread32_kfd(cr_posix_ptr + 0x54);
+}
+
+void ucred_set_svgid(uint64_t ucred_ptr, uint32_t svgid) {
+    uint64_t cr_posix_ptr = ucred_ptr + 0x18;
+    return kwrite32(cr_posix_ptr + 0x54, svgid);
+}
+
+uint64_t ucred_get_cr_label(uint64_t ucred_ptr) {
+    return kread64_ptr_kfd(ucred_ptr + 0x78);
 }
