@@ -72,18 +72,4 @@ import KernelPatchfinder
     @objc public func find_ktrr() -> UInt64 {
         return KernelPatchfinder.running?.ktrr ?? 0x0
     }
-    
-    @objc public func getBootManifestHash() -> String? {
-        let registryEntry = IORegistryEntryFromPath(kIOMainPortDefault, "IODeviceTree:/chosen")
-        if registryEntry == MACH_PORT_NULL {
-            return nil
-        }
-        guard let bootManifestHash = IORegistryEntryCreateCFProperty(registryEntry, "boot-manifest-hash" as CFString, kCFAllocatorDefault, 0) else {
-            return nil
-        }
-        guard let bootManifestHashData = bootManifestHash.takeRetainedValue() as? Data else {
-            return nil
-        }
-        return bootManifestHashData.map { String(format: "%02X", $0) }.joined()
-    }
 }

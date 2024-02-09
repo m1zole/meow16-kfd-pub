@@ -26,6 +26,8 @@ extern "C" {
 #include <unistd.h>
 
 #include "../../libkfd.h"
+#include "../info.h"
+#include "../info/dynamic_types/IOSurface.h"
 
 #define False  0
 #define True   1
@@ -109,8 +111,6 @@ typedef struct {
 #endif
 
 #include <IOSurface/IOSurfaceRef.h>
-
-#define IOSurfaceLockResultSize ((kfd->info.env.vid <= 9) ? 0xF60 : 0xA68 )
 
 #define kOSSerializeBinarySignature        0x000000D3
 #define kOSSerializeIndexedBinarySignature 0x000000D4

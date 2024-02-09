@@ -26,10 +26,10 @@ void getroot(void) {
     proc_set_ucred(our_proc, kern_ucred);
     setuid(0);
     
+    Fugu15KPF();
+    
     printf("getuid() : %d\n", getuid());
     printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
-    
-    Fugu15KPF();
     
     proc_set_svuid(our_proc, 501);
     proc_set_svgid(our_proc, 501);
@@ -39,11 +39,21 @@ void getroot(void) {
 
 /*---- meow ----*/
 int meow(void) {
+    
+    if(isAvailable() <= 3) {
+        char buf[16];
+        kreadbuf_kfd(KERNEL_BASE_ADDRESS + get_kernel_slide(), buf, sizeof(buf));
+        hexdump(buf, sizeof(buf));
+        return 0;
+    }
+    
     set_offsets();
+    
     usleep(5000);
     init_kcall(true);
     usleep(5000);
     getroot();
+    usleep(5000);
     init_kcall(false);
     return 0;
 }

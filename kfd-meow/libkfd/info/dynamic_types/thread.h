@@ -18,10 +18,20 @@ struct thread {
 static const struct thread thread_versions[] = {
     // Note: sizes below here are wrong idc
     {
-    }, // iOS 13.0 - 13.4 arm64/arm64e
+        .task_threads_next = 0x420,
+        .task_threads_prev = 0x428,
+        .map               = 0x438,
+        .thread_id         = 0x578,
+        .object_size       = 0x610
+    }, // iOS 12.0 - 12.5 arm64/arm64e
     
     {
-    }, // iOS 13.5 - 13.7 arm64/arm64e
+        .task_threads_next = 0x420,
+        .task_threads_prev = 0x428,
+        .map               = 0x438,
+        .thread_id         = 0x578,
+        .object_size       = 0x610
+    }, // iOS 13.0 - 13.7 arm64/arm64e
     
     {
         .task_threads_next = 0x420,

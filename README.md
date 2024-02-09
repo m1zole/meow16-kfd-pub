@@ -1,6 +1,7 @@
 # kfd for ios 16 arm64  
 
 ## credits
+ - kok3shidoll : high reliability exploit and ...
  - felix-pb : kfd
  - opa334 : IOSurface kwrite method, pplrw, PersistenceHelper_Embedded and IOSurface_primitives
  - checkra1n : pongoOS
@@ -12,6 +13,7 @@
  - KpwnZ : kcall
  - NSAntoine : KPF and kalloc technic
  - evelyneee : KPF and kalloc technic
+ - pattern-f : log window
 ## tested devices
 
 - d10  15.6.1 physpuppet, smith, landa

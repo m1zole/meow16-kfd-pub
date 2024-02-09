@@ -170,6 +170,7 @@ bool init_kcall(bool ealry) {
         
         IOServiceClose(user_client);
         
+        usleep(10000);
         clean_dirty_kalloc(empty_kdata, 0x2000);
     }
     if(!setup_client())

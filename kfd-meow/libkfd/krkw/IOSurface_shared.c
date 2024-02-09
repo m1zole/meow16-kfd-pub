@@ -38,7 +38,7 @@ io_connect_t create_surface_fast_path(struct kfd* kfd, io_connect_t surface, uin
         io_connect_t conn = surface;
         kern_return_t kr = KERN_SUCCESS;
 
-        const uint64_t lock_result_size = IOSurfaceLockResultSize;
+        const uint64_t lock_result_size = dynamic_offsetof(IOSurface, LockResultSize);
         char *output = malloc(lock_result_size);
         size_t output_cnt = lock_result_size;
 

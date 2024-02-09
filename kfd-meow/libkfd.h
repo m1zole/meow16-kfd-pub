@@ -136,6 +136,7 @@ extern uint64_t _kfd;
  */
 
 bool isarm64e(void);
+int ischip(void);
 int isAvailable(void);
 
 struct kfd* kfd_init(uint64_t exploit_type);
@@ -173,12 +174,18 @@ uint64_t get_proc(pid_t target);
 uint64_t phystokv_kfd(uint64_t pa);
 uint64_t vtophys_kfd(uint64_t va);
 
+#include "libkfd/info/dynamic_types/task.h"
 #include "libkfd/info/static_types/ipc_port.h"
 #include "libkfd/info/static_types/ipc_space.h"
 #include "libkfd/info/static_types/ipc_entry.h"
 
 extern uint64_t off_pmap_tte;
 extern uint64_t off_proc_pfd;
+extern uint64_t off_task_map;
+
+extern uint64_t off_task_ref_count;
+extern uint64_t off_task_active;
+extern uint64_t off_task_message_app_suspended;
 
 extern uint64_t off_fp_glob;
 extern uint64_t off_fg_data;
@@ -188,6 +195,9 @@ extern uint64_t off_task_itk_space;
 extern uint64_t off_ipc_port_ip_kobject;
 extern uint64_t off_ipc_space_is_table;
 extern uint64_t off_ipc_entry_ie_object;
+
+extern uint64_t off_ipc_port_io_references;
+extern uint64_t off_ipc_port_ip_srights;
 
 extern uint64_t off_p_csflags;
 extern uint64_t off_p_uid;

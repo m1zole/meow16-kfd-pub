@@ -104,29 +104,6 @@ void info_run(struct kfd* kfd)
     kfd->info.kernel.current_pmap = unsign_kaddr(signed_pmap_kaddr);
     print_x64(kfd->info.kernel.current_pmap);
 
-    /*
-     * current_thread() and current_uthread()
-     */
-    const bool find_current_thread = false;
-
-    if (find_current_thread) {
-        uint64_t thread_kaddr = dynamic_kget(task, threads_next, kfd->info.kernel.current_task);
-
-        while (true) {
-            uint64_t tid = dynamic_kget(thread, thread_id, thread_kaddr);
-            if (tid == kfd->info.env.tid) {
-                kfd->info.kernel.current_thread = thread_kaddr;
-                kfd->info.kernel.current_uthread = thread_kaddr + dynamic_sizeof(thread);
-                break;
-            }
-
-            thread_kaddr = dynamic_kget(thread, task_threads_next, thread_kaddr);
-        }
-
-        print_x64(kfd->info.kernel.current_thread);
-        print_x64(kfd->info.kernel.current_uthread);
-    }
-
     if (kfd->info.kernel.kernel_proc) {
         /*
          * kernel_proc() and kernel_task()

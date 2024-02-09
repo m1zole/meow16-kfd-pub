@@ -19,10 +19,22 @@ struct proc {
 static const struct proc proc_versions[] = {
     // Note: sizes below here are wrong idc
     {
-    }, // iOS 13.0 - 13.4 arm64/arm64e
+        .p_list_le_next = 0x0,
+        .p_list_le_prev = 0x8,
+        .task           = 0x10,
+        .p_pid          = 0x60,
+        .p_fd_fd_ofiles = 0x100,
+        .object_size    = 0x4a0
+    }, // iOS 12.0 - 12.5 arm64/arm64e
     
     {
-    }, // iOS 13.5 - 13.7 arm64/arm64e
+        .p_list_le_next = 0x0,
+        .p_list_le_prev = 0x8,
+        .task           = 0x10,
+        .p_pid          = 0x68,
+        .p_fd_fd_ofiles = 0x108,
+        .object_size    = 0x4a0
+    }, // iOS 13.0 - 13.7 arm64/arm64e
     
     {
         .p_list_le_next = 0x0,

@@ -14,7 +14,7 @@
 #include "troll.h"
 #include "pplrw.h"
 #include "libkfd.h"
-#include "hexdump.h"
+#include "utils.h"
 #include "meowfinder.h"
 
 extern uint64_t kernel_base;
@@ -57,7 +57,6 @@ typedef mach_port_t io_registry_entry_t;
 typedef char io_string_t[512];
 typedef UInt32 IOOptionBits;
 
-extern const mach_port_t kIOMainPortDefault;
 extern const mach_port_t kIOMasterPortDefault;
 kern_return_t IOConnectTrap6(io_connect_t connect, uint32_t index, uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4, uintptr_t p5, uintptr_t p6);
 io_service_t IOServiceGetMatchingService(mach_port_t mainPort, CFDictionaryRef matching CF_RELEASES_ARGUMENT);

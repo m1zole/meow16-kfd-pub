@@ -20,19 +20,55 @@
 #include <mach-o/nlist.h>
 #include <mach-o/reloc.h>
 
+int ischip(void) {
+    cpu_subtype_t cpuFamily = 0;
+    size_t cpuFamilySize = sizeof(cpuFamily);
+    sysctlbyname("hw.cpufamily", &cpuFamily, &cpuFamilySize, NULL, 0);
+    
+    int ret = 0;
+    
+    switch (cpuFamily) {
+        case 0x8765EDEA: // A16
+            ret = 16;
+        break;
+        case 0xDA33D83D: // A15
+            ret = 15;
+        break;
+        case 0x1B588BB3: // A14
+            ret = 14;
+        break;
+        case 0x462504D2: // A13
+            ret = 13;
+        break;
+        case 0x07D34B9F: // A12
+            ret = 12;
+        break;
+        case 0xE81E7EF6: // A11
+            ret = 11;
+        break;
+        case 0x67CEEE93: // A10
+            ret = 10;
+        break;
+        case 0x2C91A47E: // A8
+            ret = 8;
+        break;
+        case 0x37A09642: // A7
+            ret = 7;
+        break;
+        default:
+            printf("%x\n", cpuFamily);
+        break;
+    }
+    return ret;
+}
+
 bool isarm64e(void) {
-    int ptrAuthVal = 0;
-    size_t len = sizeof(ptrAuthVal);
-    assert(sysctlbyname("hw.optional.arm.FEAT_PAuth", &ptrAuthVal, &len, NULL, 0) != -1);
-    if(ptrAuthVal != 0)
+    if(ischip() >= 12)
         return true;
     return false;
 }
 
 int isAvailable(void) {
-    int ptrAuthVal = 0;
-    size_t len = sizeof(ptrAuthVal);
-    assert(sysctlbyname("hw.optional.arm.FEAT_PAuth", &ptrAuthVal, &len, NULL, 0) != -1);
     if (@available(iOS 17.0, *)) {
         return 16;
     }
@@ -72,10 +108,10 @@ int isAvailable(void) {
     if (@available(iOS 14.0, *)) {
         return 2;
     }
-    if (@available(iOS 13.5, *)) {
+    if (@available(iOS 13.0, *)) {
         return 1;
     }
-    if (@available(iOS 13.0, *)) {
+    if (@available(iOS 12.0, *)) {
         return 0;
     }
     return -1;
@@ -129,7 +165,7 @@ retry:
     info_run(kfd);
     if(isarm64e() && kfd->info.env.vid >= 10) {
         perf_run(kfd);
-    } else {
+    } else if(kfd->info.env.vid >= 4) {
         perf_ptov(kfd);
     }
     puaf_cleanup(kfd);
@@ -344,6 +380,11 @@ uint64_t get_proc(pid_t target) {
 
 uint64_t off_pmap_tte = 0;
 uint64_t off_proc_pfd = 0;
+uint64_t off_task_map = 0;
+
+uint64_t off_task_ref_count = 0;
+uint64_t off_task_active    = 0;
+uint64_t off_task_message_app_suspended = 0;
 
 uint64_t off_fp_glob  = 0;
 uint64_t off_fg_data  = 0;
@@ -353,6 +394,9 @@ uint64_t off_task_itk_space         = 0;
 uint64_t off_ipc_space_is_table     = 0;
 uint64_t off_ipc_entry_ie_object    = 0;
 uint64_t off_ipc_port_ip_kobject    = 0x48;
+
+uint64_t off_ipc_port_io_references = 0;
+uint64_t off_ipc_port_ip_srights    = 0;
 
 uint64_t off_p_csflags  = 0x1c;
 uint64_t off_p_uid      = 0x2c;
@@ -369,13 +413,17 @@ void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     off_pmap_tte = static_offsetof(pmap, tte);
     off_proc_pfd = dynamic_offsetof(proc, p_fd_fd_ofiles);
+    off_task_map = dynamic_offsetof(task, map);
     
     off_fp_glob  = static_offsetof(fileproc, fp_glob);
     off_fg_data  = static_offsetof(fileglob, fg_data);
     
-    off_task_itk_space = dynamic_offsetof(task, itk_space);
+    off_task_itk_space      = dynamic_offsetof(task, itk_space);
     off_ipc_space_is_table  = static_offsetof(ipc_space, is_table);
     off_ipc_entry_ie_object = static_offsetof(ipc_entry, ie_object);
+    
+    off_ipc_port_io_references  = static_offsetof(ipc_port, ip_object.io_references);
+    off_ipc_port_ip_srights     = static_offsetof(ipc_port, ip_srights);
     
     if(kfd->info.env.vid <= 9) {
         off_proc_proc_ro        = 0x20;
@@ -385,7 +433,13 @@ void offset_exporter(void) {
         off_p_csflags           = 0x300;
     }
     if(kfd->info.env.vid <= 5) {
-        off_task_itk_space  = 0x330;
-        off_proc_ucred      = 0xd8;
+        off_proc_ucred = 0xd8;
+    }
+    if(kfd->info.env.vid <= 1) {
+        off_ipc_port_ip_kobject = 0x68;
+        off_ipc_port_ip_srights = 0xa0;
+        off_task_ref_count      = 0x10;
+        off_task_active         = 0x14;
+        off_task_message_app_suspended = 0x1c;
     }
 }

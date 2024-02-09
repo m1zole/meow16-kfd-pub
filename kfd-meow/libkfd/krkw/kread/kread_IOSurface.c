@@ -107,7 +107,7 @@ static inline int64_t adrp_off(uint32_t adrp)
 
 uint64_t patchfind_kernproc(struct kfd* kfd, uint64_t kernel_base)
 {
-    //u64 kernel_slide = kernel_base - 0xFFFFFFF007004000;
+    //uint64_t kernel_slide = kernel_base - KERNEL_BASE_ADDRESS;
     // ^ only for debugging
     
     uint64_t textexec_text_addr = 0, textexec_text_size = 0;
@@ -122,7 +122,7 @@ uint64_t patchfind_kernproc(struct kfd* kfd, uint64_t kernel_base)
     uint64_t movKaddr = 0;
     
     // this patchfinder is slow af, we start 0x180000 in to speed it up because the reference we're looking for is usually in this area
-#define FAST_START 0x180000
+#define FAST_START ((ischip() <= 8) ? 0x100000 : 0x180000 )
     
     uint64_t instrForward = textexec_text_addr + FAST_START;
     uint64_t instrBackward = instrForward;
@@ -231,10 +231,10 @@ void kread_IOSurface_find_proc(struct kfd* kfd)
             }
         }
     }
-    
-    uint64_t kernel_slide = kernel_base - 0xFFFFFFF007004000;
-    uint64_t kernproc = patchfind_kernproc(kfd, kernel_base);
+    uint64_t kernel_slide = kernel_base - KERNEL_BASE_ADDRESS;
     kfd->info.kernel.kernel_slide = kernel_slide;
+    print_x64(kfd->info.kernel.kernel_slide);
+    uint64_t kernproc = patchfind_kernproc(kfd, kernel_base);
     
     uint64_t proc_kaddr = 0;
     kread_kfd((uint64_t)kfd, kernproc, &proc_kaddr, sizeof(proc_kaddr));

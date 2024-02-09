@@ -13,8 +13,7 @@
 #import <mach-o/dyld.h>
 #import <sys/sysctl.h>
 #include "libkfd.h"
-#include "hexdump.h"
-#include "pplrw-by-xina.h"
+#include "utils.h"
 #include "IOSurface_Primitives.h"
 
 int test_pplrw(void);
