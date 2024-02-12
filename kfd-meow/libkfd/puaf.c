@@ -59,7 +59,8 @@ void puaf_init(struct kfd* kfd, uint64_t exploit_type)
 
 void puaf_run(struct kfd* kfd)
 {
-    puaf_helper_give_ppl_pages();
+    if(kfd->info.env.vid != 0)
+        puaf_helper_give_ppl_pages();
     
     kfd->puaf.puaf_method_ops.run(kfd);
 }
