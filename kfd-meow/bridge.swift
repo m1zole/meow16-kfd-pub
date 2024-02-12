@@ -66,10 +66,35 @@ import KernelPatchfinder
     @objc public func find_pmap_image4_trust_caches() -> UInt64 {
         return KernelPatchfinder.running?.pmap_image4_trust_caches ?? 0x0
     }
+    @objc public func find_pmap_enter_options_addr() -> UInt64 {
+        return KernelPatchfinder.running?.pmap_enter_options_addr ?? 0x0
+    }
+    @objc public func find_pmap_remove_options() -> UInt64 {
+        return KernelPatchfinder.running?.pmap_remove_options ?? 0x0
+    }
     @objc public func find_ITK_SPACE() -> UInt64 {
         return KernelPatchfinder.running?.ITK_SPACE ?? 0x0
     }
     @objc public func find_ktrr() -> UInt64 {
         return KernelPatchfinder.running?.ktrr ?? 0x0
+    }
+    @objc public func getKernelcachePath() -> String? {
+        let chosen = IORegistryEntryFromPath(kIOMasterPortDefault, "IODeviceTree:/chosen")
+        if chosen == 0 {
+            return nil
+        }
+        
+        defer { IOObjectRelease(chosen) }
+        
+        guard let hash = IORegistryEntryCreateCFProperty(chosen, "boot-manifest-hash" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Data else {
+            return nil
+        }
+        
+        var bmhStr = ""
+        for byte in hash {
+            bmhStr += String(format: "%02X", byte)
+        }
+        
+        return "/private/preboot/\(bmhStr)/System/Library/Caches/com.apple.kernelcaches/kernelcache"
     }
 }

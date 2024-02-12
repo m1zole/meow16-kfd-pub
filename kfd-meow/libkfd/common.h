@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #define pages(number_of_pages) ((number_of_pages) * (16384ull))
+#define page4k(number_of_pages) ((number_of_pages) * (4096ull))
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))

@@ -14,12 +14,14 @@
 uint64_t _kfd = 0;
 uint64_t puaf_method = 2;
 uint64_t mode = 0;
+int chip = 0;
 
 extern void (*log_UI)(const char *text);
 void log_toView(const char *text);
 static ViewController *sharedController = nil;
 
 uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
+    chip = ischip();
     uint64_t exploit_type = (1 << puaf_method);
     _kfd = kopen(exploit_type, debug);
     offset_exporter();
@@ -72,7 +74,7 @@ uint64_t kclose_bridge(uint64_t _kfd) {
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-        _kfd = kopen_bridge(puaf_method, 0);
+        _kfd = kopen_bridge(puaf_method, mode);
         
         sleep(1);
         

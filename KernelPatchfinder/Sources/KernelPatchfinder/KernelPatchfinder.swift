@@ -174,51 +174,66 @@ open class KernelPatchfinder {
             return cachedResults.unsafelyUnwrapped["pmap_enter_options_addr"]
         }
         
-        guard let pmap_enter_options_ppl = pplDispatchFunc(forOperation: 0xA) else {
-            return nil
-        }
-        
-        // Now the hard part: xref pmap_enter_options_ppl and find out which one is pmap_enter_options_addr
-        // pmap_enter_options does an 'or' and an 'and' before the call, but no left shift
-        var candidate = textExec.findNextXref(to: pmap_enter_options_ppl, optimization: .onlyBranches)
-        var pmap_enter_options_addr: UInt64!
-        while candidate != nil {
-            // Check 20 instructions before
-            var foundOr  = false
-            var foundAnd = false
-            for i in 1..<20 {
-                let inst = textExec.instruction(at: candidate! - UInt64(i * 4)) ?? 0
-                if inst & 0x7F800000 == 0x12000000 {
-                    foundAnd = true
-                } else if inst & 0x7F800000 == 0x32000000 {
-                    foundOr  = true
-                } else if inst & 0x7F800000 == 0x53000000 {
-                    // Nope, that's a lsl
-                    foundAnd = false
-                    foundOr  = false
+        if(isarm64e) {
+            guard let pmap_enter_options_ppl = pplDispatchFunc(forOperation: 0xA) else {
+                return nil
+            }
+            
+            // Now the hard part: xref pmap_enter_options_ppl and find out which one is pmap_enter_options_addr
+            // pmap_enter_options does an 'or' and an 'and' before the call, but no left shift
+            var candidate = textExec.findNextXref(to: pmap_enter_options_ppl, optimization: .onlyBranches)
+            var pmap_enter_options_addr: UInt64!
+            while candidate != nil {
+                // Check 20 instructions before
+                var foundOr  = false
+                var foundAnd = false
+                for i in 1..<20 {
+                    let inst = textExec.instruction(at: candidate! - UInt64(i * 4)) ?? 0
+                    if inst & 0x7F800000 == 0x12000000 {
+                        foundAnd = true
+                    } else if inst & 0x7F800000 == 0x32000000 {
+                        foundOr  = true
+                    } else if inst & 0x7F800000 == 0x53000000 {
+                        // Nope, that's a lsl
+                        foundAnd = false
+                        foundOr  = false
+                        break
+                    }
+                }
+                
+                if foundOr && foundAnd {
+                    // Should be it
+                    pmap_enter_options_addr = candidate
                     break
                 }
+                
+                candidate = textExec.findNextXref(to: pmap_enter_options_ppl, startAt: candidate! + 4, optimization: .onlyBranches)
             }
             
-            if foundOr && foundAnd {
-                // Should be it
-                pmap_enter_options_addr = candidate
-                break
+            guard pmap_enter_options_addr != nil else {
+                return nil
             }
             
-            candidate = textExec.findNextXref(to: pmap_enter_options_ppl, startAt: candidate! + 4, optimization: .onlyBranches)
-        }
-        
-        guard pmap_enter_options_addr != nil else {
+            // Find the start of pmap_enter_options_addr
+            while !AArch64Instr.isPacibsp(textExec.instruction(at: pmap_enter_options_addr.unsafelyUnwrapped) ?? 0) {
+                pmap_enter_options_addr -= 4
+            }
+            
+            return pmap_enter_options_addr
+        } else {
+            guard let pc = textExec.findNextXref(to: cStrSect.addrOf("pmap_steal_memory() size: 0x%llx @%s:%d") ?? 0, optimization: .noBranches) else {
+                return nil
+            }
+            var i:UInt64 = 0
+            while(i <= 0x200) {
+                var ret = AArch64Instr.Emulate.bl(textExec.instruction(at: pc - i) ?? 0, pc: pc - i)
+                if(ret != nil) {
+                    return ret
+                }
+                i += 0x4
+            }
             return nil
         }
-        
-        // Find the start of pmap_enter_options_addr
-        while !AArch64Instr.isPacibsp(textExec.instruction(at: pmap_enter_options_addr.unsafelyUnwrapped) ?? 0) {
-            pmap_enter_options_addr -= 4
-        }
-        
-        return pmap_enter_options_addr
     }()
     
     /// Address of the signed part of the `hw_lck_ticket_reserve_orig_allow_invalid` function
@@ -399,25 +414,39 @@ open class KernelPatchfinder {
             return cachedResults.unsafelyUnwrapped["pmap_remove_options"]
         }
         
-        guard let pmap_remove_ppl = pplDispatchFunc(forOperation: 0x17) else {
-            return nil
-        }
-        
-        var pc: UInt64?
-        while true {
-            guard var candidate = textExec.findNextXref(to: pmap_remove_ppl, startAt: pc, optimization: .onlyBranches) else {
+        if(isarm64e) {
+            guard let pmap_remove_ppl = pplDispatchFunc(forOperation: 0x17) else {
                 return nil
             }
             
-            if textExec.instruction(at: candidate - 4) != 0x52802003 {
-                while !AArch64Instr.isPacibsp(textExec.instruction(at: candidate) ?? 0) {
-                    candidate -= 4
+            var pc: UInt64?
+            while true {
+                guard var candidate = textExec.findNextXref(to: pmap_remove_ppl, startAt: pc, optimization: .onlyBranches) else {
+                    return nil
                 }
                 
-                return candidate
+                if textExec.instruction(at: candidate - 4) != 0x52802003 {
+                    while !AArch64Instr.isPacibsp(textExec.instruction(at: candidate) ?? 0) {
+                        candidate -= 4
+                    }
+                    
+                    return candidate
+                }
+                
+                pc = candidate + 4
             }
-            
-            pc = candidate + 4
+        } else {
+            guard let pc = textExec.findNextXref(to: cStrSect.addrOf("%s: attempt to remove mappings owned by pmap %p through pmap %p, starting at pte %p @%s:%d") ?? 0, optimization: .noBranches) else {
+                return nil
+            }
+            var i:UInt64 = 0
+            while(i <= 0x500) {
+                if((textExec.instruction(at: pc - i) ?? 0) & 0xff000000 == 0xd1000000) {
+                    return pc - i
+                }
+                i += 0x4
+            }
+            return nil
         }
     }()
     
@@ -774,12 +803,12 @@ open class KernelPatchfinder {
                 
                 var i:  UInt64 = 0
                 var pc: UInt64 = 0
-                while(i < 0x200) {
-                    if textExec.instruction(at: ref - i) != 0xD10083FF {
-                        i += 4
-                    } else {
+                while(i < 0x300) {
+                    if ((textExec.instruction(at: ref - i) ?? 0) & 0xff000000 == 0xd1000000) {
                         pc = ref - i
+                        break;
                     }
+                    i += 4
                 }
                 
                 var j:  UInt64 = 0

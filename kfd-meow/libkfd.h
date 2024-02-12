@@ -139,6 +139,8 @@ bool isarm64e(void);
 int ischip(void);
 int isAvailable(void);
 
+extern int chip;
+
 struct kfd* kfd_init(uint64_t exploit_type);
 void kfd_free(struct kfd* kfd);
 uint64_t kopen(uint64_t exploit_type, uint64_t pplrw);
@@ -168,8 +170,8 @@ uint64_t get_current_pmap(void);
 uint64_t get_kernel_ttbr0va(void);
 uint64_t get_kernel_ttbr1va(void);
 uint64_t get_kernel_slide(void);
-
-uint64_t get_proc(pid_t target);
+uint64_t get_physbase(void);
+uint64_t get_physsize(void);
 
 uint64_t phystokv_kfd(uint64_t pa);
 uint64_t vtophys_kfd(uint64_t va);
@@ -181,6 +183,8 @@ uint64_t vtophys_kfd(uint64_t va);
 
 extern uint64_t off_pmap_tte;
 extern uint64_t off_proc_pfd;
+extern uint64_t off_proc_pid;
+extern uint64_t off_proc_pre;
 extern uint64_t off_task_map;
 
 extern uint64_t off_task_ref_count;
@@ -198,17 +202,6 @@ extern uint64_t off_ipc_entry_ie_object;
 
 extern uint64_t off_ipc_port_io_references;
 extern uint64_t off_ipc_port_ip_srights;
-
-extern uint64_t off_p_csflags;
-extern uint64_t off_p_uid;
-extern uint64_t off_p_gid;
-extern uint64_t off_p_ruid;
-extern uint64_t off_p_rgid;
-extern uint64_t off_proc_ucred;
-extern uint64_t off_proc_proc_ro;
-extern uint64_t off_task_t_flags;
-extern uint64_t off_p_ro_t_flags_ro;
-extern uint64_t off_p_ro_p_csflags;
 
 void offset_exporter(void);
 

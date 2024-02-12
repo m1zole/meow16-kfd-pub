@@ -4,15 +4,15 @@
 
 #include "physpuppet.h"
 
-const uint64_t physpuppet_vmne_size = pages(2) + 1;
-const uint64_t physpuppet_vme_offset = pages(1);
-const uint64_t physpuppet_vme_size = pages(2);
+uint64_t physpuppet_vmne_size;
+uint64_t physpuppet_vme_offset;
+uint64_t physpuppet_vme_size;
 
 void physpuppet_init(struct kfd* kfd)
 {
-    /*
-     * Nothing to do.
-     */
+    physpuppet_vmne_size = pages(2) + 1;
+    physpuppet_vme_offset = pages(1);
+    physpuppet_vme_size = pages(2);
     return;
 }
 
@@ -89,6 +89,8 @@ void physpuppet_run(struct kfd* kfd)
 
 void physpuppet_cleanup(struct kfd* kfd)
 {
+    //vm_page_size and vm_page_mask are hardcoded for 16k
+    //so physpuppet doesn't support 4k devices for now
     uint64_t kread_page_uaddr = trunc_page(kfd->kread.krkw_object_uaddr);
     uint64_t kwrite_page_uaddr = trunc_page(kfd->kwrite.krkw_object_uaddr);
     

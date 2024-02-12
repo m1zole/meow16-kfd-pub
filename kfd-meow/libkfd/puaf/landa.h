@@ -12,10 +12,6 @@
 #include "../info/dynamic_types/vm_map.h"
 #include "../info/static_types/vm_map_entry.h"
 
-extern const uint64_t landa_vme1_size;
-extern const uint64_t landa_vme2_size;
-extern const uint64_t landa_vme4_size;
-
 struct landa_data {
     atomic_bool main_thread_returned;
     atomic_bool spinner_thread_started;

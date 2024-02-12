@@ -122,7 +122,7 @@ uint64_t patchfind_kernproc(struct kfd* kfd, uint64_t kernel_base)
     uint64_t movKaddr = 0;
     
     // this patchfinder is slow af, we start 0x180000 in to speed it up because the reference we're looking for is usually in this area
-#define FAST_START ((ischip() <= 8) ? 0x100000 : 0x180000 )
+#define FAST_START (((ischip() <= 8) || (kfd->info.env.vid <= 5)) ? 0x100000 : 0x180000 )
     
     uint64_t instrForward = textexec_text_addr + FAST_START;
     uint64_t instrBackward = instrForward;
@@ -200,6 +200,87 @@ uint64_t patchfind_kernproc(struct kfd* kfd, uint64_t kernel_base)
     return ((adrpKaddr & ~0xfff) + adrp_imm) + ldr_imm;
 }
 
+uint64_t patchfind_kernproc12(struct kfd* kfd, uint64_t kernel_base)
+{
+    //uint64_t kernel_slide = kernel_base - KERNEL_BASE_ADDRESS;
+    // ^ only for debugging
+    
+    uint64_t textexec_text_addr = 0, textexec_text_size = 0;
+    get_kernel_section(kfd, kernel_base, "__TEXT_EXEC", "__text", &textexec_text_addr, &textexec_text_size);
+    assert(textexec_text_addr != 0 && textexec_text_size != 0);
+    
+    uint64_t textexec_text_addr_end = textexec_text_addr + textexec_text_size;
+    
+    // For some reason "add w8, w20, #ffffffbf" always follows a kernproc reference, we take advantage of that here
+    uint32_t addSearch = 0x12197A88; // "add w8, w20, #ffffffbf"
+    uint64_t addKaddr = 0;
+    
+    // this patchfinder is slow af, we start 0x180000 in to speed it up because the reference we're looking for is usually in this area
+#define FAST_START12 0x200000
+    
+    uint64_t instrForward = textexec_text_addr + FAST_START12;
+    uint64_t instrBackward = instrForward;
+    
+    while (true) {
+        if (instrForward < textexec_text_addr_end) {
+            uint32_t instr = 0;
+            kread_kfd((uint64_t)kfd, instrForward, &instr, sizeof(instr));
+            if (instr == addSearch) {
+                addKaddr = instrForward;
+                break;
+            }
+            instrForward += 4;
+        }
+        if (instrBackward > textexec_text_addr) {
+            uint32_t instr = 0;
+            kread_kfd((uint64_t)kfd, instrBackward, &instr, sizeof(instr));
+            if (instr == addSearch) {
+                addKaddr = instrBackward;
+                break;
+            }
+            instrBackward -= 4;
+        }
+    }
+    
+    uint64_t ldrKaddr = 0;
+    uint32_t ldrInstr = 0;
+    bool done = false;
+    for (uint32_t i = 0; i < 30; i++) {
+        uint64_t addr = addKaddr+(4*i);
+        uint32_t instr = 0;
+        kread_kfd((uint64_t)kfd, addr, &instr, sizeof(instr));
+        usleep(5000);
+        if ((instr & 0xfff00000) == 0xF9400000) {
+            //printf("%d:     %x,  %x\n", i, instr, instr & 0xfff00000);
+            ldrKaddr = addr;
+            ldrInstr = instr;
+            if(!done) {
+                done = true;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    //printf("ldrKaddr: 0x%llx\n", ldrKaddr - kernel_slide);
+    //printf("ldrInstr: 0x%x\n", ldrInstr);
+    
+    uint64_t adrpKaddr = ldrKaddr - 0x4;
+    uint32_t adrpInstr = 0;
+    kread_kfd((uint64_t)kfd, adrpKaddr, &adrpInstr, sizeof(adrpInstr));
+    
+    // We got everything we need! Now just decode and get kernproc
+    
+    int64_t adrp_imm = adrp_off(adrpInstr);
+    uint32_t ldr_imm = ((ldrInstr & 0x003FFC00) >> 9) * 4;
+    
+    //printf("adrp_imm: %lld\n", adrp_imm);
+    //printf("ldr_imm: %x\n", ldr_imm);
+    //printf("adrpKaddr page: 0x%llx\n", (adrpKaddr - kernel_slide) & ~0xfff);
+    
+    return ((adrpKaddr & ~0xfff) + adrp_imm) + ldr_imm;
+}
+
 void kread_IOSurface_find_proc(struct kfd* kfd)
 {
     uint64_t textPtr = unsign_kaddr(dynamic_uget(IOSurface, isa, kfd->kread.krkw_object_uaddr));
@@ -234,7 +315,12 @@ void kread_IOSurface_find_proc(struct kfd* kfd)
     uint64_t kernel_slide = kernel_base - KERNEL_BASE_ADDRESS;
     kfd->info.kernel.kernel_slide = kernel_slide;
     print_x64(kfd->info.kernel.kernel_slide);
-    uint64_t kernproc = patchfind_kernproc(kfd, kernel_base);
+    uint64_t kernproc = 0;
+    if(kfd->info.env.vid == 0) {
+        kernproc = patchfind_kernproc12(kfd, kernel_base);
+    } else {
+        kernproc = patchfind_kernproc(kfd, kernel_base);
+    }
     
     uint64_t proc_kaddr = 0;
     kread_kfd((uint64_t)kfd, kernproc, &proc_kaddr, sizeof(proc_kaddr));

