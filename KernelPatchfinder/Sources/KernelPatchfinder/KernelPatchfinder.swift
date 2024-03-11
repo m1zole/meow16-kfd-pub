@@ -34,6 +34,9 @@ open class KernelPatchfinder {
     /// `__TEXT_EXEC,__text` section
     public let textExec: PatchfinderSegment!
     
+    /// `__PLK__TEXT_EXEC,__text` section
+    public let plkExec: PatchfinderSegment!
+    
     /// `__TEXT,__cstring` section
     public let cStrSect: PatchfinderSegment!
     
@@ -1314,6 +1317,25 @@ open class KernelPatchfinder {
         return ret
     }()
     
+    public lazy var load_gadget: UInt64? = {
+        return plkExec.addrOf([0xa9412005, 0xa9420801, 0xa9431003, 0xaa0803e0, 0xd61f00a0])
+    }()
+    
+    public lazy var func_gadget: UInt64? = {
+        guard let pc = plkExec.addrOf([0xaa0103f3, 0xf9404c00, 0xf9400008, 0xf943e108, 0xd63f0100, 0xf9000260]) else {
+            return nil
+        }
+        return pc - 0xc
+    }()
+    
+    public func mov_xd_xt__br_xn(mov_rd_rt_opcode: UInt32, br_xn_opcode: UInt32) -> UInt64? {
+        //var ret = textExec.addrOf([mov_rd_rt_opcode, br_xn_opcode])
+        //if(ret == nil) {
+        //    ret = plkExec.addrOf([mov_rd_rt_opcode, br_xn_opcode])
+        //}
+        return plkExec.addrOf([mov_rd_rt_opcode, br_xn_opcode])
+    }
+    
     public func exportResults() -> Data? {
         let results_opt = [
             "baseAddress": baseAddress,
@@ -1409,6 +1431,10 @@ open class KernelPatchfinder {
             return nil
         }
         
+        guard let plkExec = kernel.pfSection(segment: "__PLK_TEXT_EXEC", section: "__text") else {
+            return nil
+        }
+        
         guard let cStrSect = kernel.pfSection(segment: "__TEXT", section: "__cstring") else {
             return nil
         }
@@ -1424,6 +1450,7 @@ open class KernelPatchfinder {
         let pplText = kernel.pfSection(segment: "__PPLTEXT", section: "__text") ?? nil
         
         self.textExec  = textExec
+        self.plkExec   = plkExec
         self.cStrSect  = cStrSect
         self.dataSect  = dataSect
         self.constSect = constSect
@@ -1509,6 +1536,7 @@ open class KernelPatchfinder {
         self.kernel              = nil
         self.runningUnderPiranha = false
         self.textExec            = nil
+        self.plkExec             = nil
         self.cStrSect            = nil
         self.dataSect            = nil
         self.constSect           = nil

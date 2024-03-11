@@ -1,7 +1,7 @@
 # kfd for ios 16 arm64  
 
 ## credits
- - kok3shidoll : high reliability exploit and ...
+ - kok3shidoll : high reliability exploit sockport2 legacy and ...
  - felix-pb : kfd
  - opa334 : IOSurface kwrite method, pplrw, PersistenceHelper_Embedded and IOSurface_primitives
  - checkra1n : pongoOS
@@ -14,6 +14,8 @@
  - NSAntoine : KPF and kalloc technic
  - evelyneee : KPF and kalloc technic
  - pattern-f : log window
+ - TheRealClarity : wtfis
+
 ## tested devices
 
 - d10  15.6.1 physpuppet, smith, landa
@@ -25,4 +27,8 @@
 - j171 17.0b1 smith, landa
 
 ## todo
- - implement iosurface release_surface function
+ - fix some kfd offsets
+ - sockport for 32 bit devices
+ - sockport for smap devices
+ - add badrecovery
+ - physrw

@@ -6,47 +6,17 @@
 //
 
 #import "ViewController.h"
-#include "libkfd.h"
-#include "pplrw.h"
-#include "troll.h"
-#include "meow.h"
+#include "kfd/libkfd.h"
+#include "dmaFail/pplrw.h"
+#include "sockport2/sockport2.h"
+#include "utils.h"
 
 uint64_t _kfd = 0;
-uint64_t puaf_method = 2;
-uint64_t mode = 0;
-int chip = 0;
+uint64_t puaf_method = 1;
 
 extern void (*log_UI)(const char *text);
 void log_toView(const char *text);
 static ViewController *sharedController = nil;
-
-uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
-    chip = ischip();
-    uint64_t exploit_type = (1 << puaf_method);
-    _kfd = kopen(exploit_type, debug);
-    offset_exporter();
-    if(debug == 0) {
-        if(isarm64e()) {
-            sleep(1);
-            test_pplrw();
-        } else {
-            sleep(1);
-            meow();
-        }
-    } else {
-        TrollStoreinstall();
-    }
-    if(_kfd != 0)
-        return _kfd;
-    
-    return 0;
-}
-
-uint64_t kclose_bridge(uint64_t _kfd) {
-    kclose(_kfd);
-    return 0;
-}
-
 
 @interface ViewController ()
 
@@ -64,7 +34,7 @@ uint64_t kclose_bridge(uint64_t _kfd) {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     sharedController = self;
-    self.textView.text = @"[*] hi";
+    self.textView.text = @"";
     self.textView.textContainer.lineBreakMode = NSLineBreakByCharWrapping;
     [[sharedController meowButton] setEnabled:TRUE];
     log_UI = log_toView;
@@ -73,8 +43,25 @@ uint64_t kclose_bridge(uint64_t _kfd) {
 - (IBAction)meow:(id)sender {
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        char buf[16];
+        if (puaf_method == 2) {
+            get_tfp0();
+            if (@available(iOS 10.0, *)) {
+                kreadbuf_sp(KERNEL_BASE_ADDRESS + get_kslide_new(), buf, sizeof(buf));
+            } else {
+                kreadbuf_sp(KERNEL_BASE_ADDRESS9 + get_kslide_anchor(), buf, sizeof(buf));
+            }
+        } else {
+            _kfd = kopen((1 << puaf_method));
+            kreadbuf_kfd(KERNEL_BASE_ADDRESS + get_kernel_slide(), buf, sizeof(buf));
+        }
         
-        _kfd = kopen_bridge(puaf_method, mode);
+        util_hexprint(buf, sizeof(buf), "kbase");
+        
+        if(isarm64e()) {
+            sleep(1);
+            test_pplrw();
+        }
         
         sleep(1);
         
@@ -92,7 +79,10 @@ uint64_t kclose_bridge(uint64_t _kfd) {
 }
 
 - (IBAction)mode:(id)sender {
-    mode = self.SelectedMode.selectedSegmentIndex;
+    uint64_t mode = self.SelectedMode.selectedSegmentIndex;
+    if(!mode) {
+        printf("nothing to do!\n");
+    }
 }
 
 

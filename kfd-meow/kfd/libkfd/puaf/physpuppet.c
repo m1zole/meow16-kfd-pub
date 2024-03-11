@@ -13,6 +13,11 @@ void physpuppet_init(struct kfd* kfd)
     physpuppet_vmne_size = pages(2) + 1;
     physpuppet_vme_offset = pages(1);
     physpuppet_vme_size = pages(2);
+    if(ischip() == 7) {
+        physpuppet_vmne_size = pages(2)/4 + 1;
+        physpuppet_vme_offset = pages(1)/4;
+        physpuppet_vme_size = pages(2)/4;
+    }
     return;
 }
 
@@ -87,12 +92,18 @@ void physpuppet_run(struct kfd* kfd)
     }
 }
 
+#define trunc_page4k(x)   ((x) & (~(0x1000 - 1)))
 void physpuppet_cleanup(struct kfd* kfd)
 {
-    //vm_page_size and vm_page_mask are hardcoded for 16k
-    //so physpuppet doesn't support 4k devices for now
-    uint64_t kread_page_uaddr = trunc_page(kfd->kread.krkw_object_uaddr);
-    uint64_t kwrite_page_uaddr = trunc_page(kfd->kwrite.krkw_object_uaddr);
+    uint64_t kread_page_uaddr  = 0;
+    uint64_t kwrite_page_uaddr = 0;
+    if(ischip() == 7) {
+        kread_page_uaddr  = trunc_page4k(kfd->kread.krkw_object_uaddr);
+        kwrite_page_uaddr = trunc_page4k(kfd->kwrite.krkw_object_uaddr);
+    } else {
+        kread_page_uaddr  = trunc_page(kfd->kread.krkw_object_uaddr);
+        kwrite_page_uaddr = trunc_page(kfd->kwrite.krkw_object_uaddr);
+    }
     
     for (uint64_t i = 0; i < kfd->puaf.number_of_puaf_pages; i++) {
         uint64_t puaf_page_uaddr = kfd->puaf.puaf_pages_uaddr[i];
@@ -106,8 +117,15 @@ void physpuppet_cleanup(struct kfd* kfd)
 
 void physpuppet_free(struct kfd* kfd)
 {
-    uint64_t kread_page_uaddr = trunc_page(kfd->kread.krkw_object_uaddr);
-    uint64_t kwrite_page_uaddr = trunc_page(kfd->kwrite.krkw_object_uaddr);
+    uint64_t kread_page_uaddr  = 0;
+    uint64_t kwrite_page_uaddr = 0;
+    if(ischip() == 7) {
+        kread_page_uaddr  = trunc_page4k(kfd->kread.krkw_object_uaddr);
+        kwrite_page_uaddr = trunc_page4k(kfd->kwrite.krkw_object_uaddr);
+    } else {
+        kread_page_uaddr  = trunc_page(kfd->kread.krkw_object_uaddr);
+        kwrite_page_uaddr = trunc_page(kfd->kwrite.krkw_object_uaddr);
+    }
     
     assert_mach(vm_deallocate(mach_task_self(), kread_page_uaddr - physpuppet_vme_offset, physpuppet_vme_size));
     if (kwrite_page_uaddr != kread_page_uaddr) {

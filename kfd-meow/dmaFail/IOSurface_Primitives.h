@@ -8,7 +8,13 @@
 #ifndef IOSurface_Permissive_h
 #define IOSurface_Permissive_h
 
+#import <Foundation/Foundation.h>
+#import <IOSurface/IOSurfaceRef.h>
+#import <CoreGraphics/CoreGraphics.h>
 #include <stdio.h>
+#include <os/log.h>
+#include "IOSurface_Primitives.h"
+#include "../kfd/libkfd.h"
 
 uint64_t ipc_find_port(mach_port_t port_name);
 uint64_t ipc_entry_lookup(mach_port_name_t port_name);

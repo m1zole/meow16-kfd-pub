@@ -36,18 +36,18 @@ void util_hexprint(void *data, size_t len, const char *desc)
         util_printf("%s\n", desc);
     }
     for (i = 0; i < len; i++) {
-        if (i % 16 == 0) {
+        if (i % 8 == 0) {
             util_printf("%04x: ", (uint16_t)i);
         }
         util_printf("%02x ", ptr[i]);
-        if (i % 16 == 7) {
+        if (i % 8 == 3) {
             util_printf(" ");
         }
-        if (i % 16 == 15) {
+        if (i % 8 == 7) {
             util_printf("\n");
         }
     }
-    if (i % 16 != 0) {
+    if (i % 8 != 0) {
         util_printf("\n");
     }
 }

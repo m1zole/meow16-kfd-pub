@@ -5,7 +5,6 @@
 //  Created by Lars Fröder on 29.12.23.
 //
 
-#include "kfd_meow-Swift.h"
 #include "pplrw.h"
 
 struct shit_map {
@@ -502,15 +501,5 @@ int test_pplrw(void)
         return -1;
     }
     
-    return 0;
-}
-
-int test_ktrr(void)
-{
-    objcbridge *obj = [[objcbridge alloc] init];
-    uint64_t target = [obj find_ktrr];
-    dma_perform(^{
-        dma_writevirt32(get_kernel_slide() + target, 0x37c3);
-    });
     return 0;
 }

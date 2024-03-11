@@ -23,9 +23,7 @@ void info_init(struct kfd* kfd)
      * - The src vm_object must have a copy_strategy of MEMORY_OBJECT_COPY_NONE.
      * - The dst vm_object must have a copy_strategy of MEMORY_OBJECT_COPY_SYMMETRIC.
      */
-    const uint64_t msg_ool_size_small = (32 * 1024);
     kfd->info.copy.size = pages(4);
-    kfd_assert(kfd->info.copy.size > msg_ool_size_small);
 
     assert_mach(vm_allocate(mach_task_self(), &kfd->info.copy.src_uaddr, kfd->info.copy.size, VM_FLAGS_ANYWHERE | VM_FLAGS_PURGABLE));
     assert_mach(vm_allocate(mach_task_self(), &kfd->info.copy.dst_uaddr, kfd->info.copy.size, VM_FLAGS_ANYWHERE));

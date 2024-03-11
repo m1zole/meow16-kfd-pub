@@ -3,12 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		868BDAB12B2E14260017CB10 /* libmeow.m in Sources */ = {isa = PBXBuildFile; fileRef = 868BDAB02B2E14260017CB10 /* libmeow.m */; };
-		868BDABA2B2E1A890017CB10 /* meowfinder.m in Sources */ = {isa = PBXBuildFile; fileRef = 868BDAB92B2E1A890017CB10 /* meowfinder.m */; };
 		86A48A7B2B2B49CE005D1639 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 86A48A7A2B2B49CE005D1639 /* Assets.xcassets */; };
 		86A48ABC2B2B4A0A005D1639 /* puaf.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48A892B2B4A0A005D1639 /* puaf.c */; };
 		86A48ABD2B2B4A0A005D1639 /* perf.m in Sources */ = {isa = PBXBuildFile; fileRef = 86A48A8A2B2B4A0A005D1639 /* perf.m */; };
@@ -22,36 +20,31 @@
 		86A48ACB2B2B5451005D1639 /* kread_sem_open.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48AC92B2B5451005D1639 /* kread_sem_open.c */; };
 		D5123A022B4C40B10040BF9D /* pplrw.m in Sources */ = {isa = PBXBuildFile; fileRef = D5123A012B4C40B10040BF9D /* pplrw.m */; };
 		D5123A062B4C41040040BF9D /* IOSurface_Primitives.m in Sources */ = {isa = PBXBuildFile; fileRef = D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */; };
-		D51A54622B66653D00F7EFDC /* troll.m in Sources */ = {isa = PBXBuildFile; fileRef = D51A54612B66653D00F7EFDC /* troll.m */; };
-		D51A54872B66BB9A00F7EFDC /* PersistenceHelper_Embedded in Resources */ = {isa = PBXBuildFile; fileRef = D51A54862B66BB9A00F7EFDC /* PersistenceHelper_Embedded */; };
-		D51A54922B6BCE9E00F7EFDC /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86A48AC72B2B4A89005D1639 /* IOKit.framework */; };
-		D51A54982B6F53A200F7EFDC /* meow.m in Sources */ = {isa = PBXBuildFile; fileRef = D51A54972B6F53A200F7EFDC /* meow.m */; };
+		D54208582B9F203E0048428C /* iosurface.c in Sources */ = {isa = PBXBuildFile; fileRef = D542084E2B9F203E0048428C /* iosurface.c */; };
+		D54208592B9F203E0048428C /* exploit_utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = D54208502B9F203E0048428C /* exploit_utilities.c */; };
+		D542085A2B9F203E0048428C /* kernel_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = D54208542B9F203E0048428C /* kernel_memory.c */; };
+		D542085B2B9F203E0048428C /* exploit.m in Sources */ = {isa = PBXBuildFile; fileRef = D54208552B9F203E0048428C /* exploit.m */; };
+		D542085C2B9F203E0048428C /* offsets.m in Sources */ = {isa = PBXBuildFile; fileRef = D54208572B9F203E0048428C /* offsets.m */; };
+		D54208622BA02DFE0048428C /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D54208612BA02DFE0048428C /* SceneDelegate.m */; };
+		D54208852BA1AFA40048428C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86A48AC72B2B4A89005D1639 /* IOKit.framework */; };
 		D54990D72B42C7C3003B3486 /* landa.c in Sources */ = {isa = PBXBuildFile; fileRef = D54990D62B42C7C3003B3486 /* landa.c */; };
 		D576DF722B5FFE23004C3933 /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = D576DF702B5FFE23004C3933 /* utils.c */; };
-		D5B5FF862B622AC200B53629 /* kcall.m in Sources */ = {isa = PBXBuildFile; fileRef = D5B5FF842B622AC200B53629 /* kcall.m */; };
 		D5BF82C52B50242F00C02D17 /* patchfinder.m in Sources */ = {isa = PBXBuildFile; fileRef = D5BF82C22B50242F00C02D17 /* patchfinder.m */; };
 		D5BF82C62B50242F00C02D17 /* libdimentio.c in Sources */ = {isa = PBXBuildFile; fileRef = D5BF82C32B50242F00C02D17 /* libdimentio.c */; };
 		D5BF82DE2B53AD7400C02D17 /* kwrite_dup.c in Sources */ = {isa = PBXBuildFile; fileRef = D5BF82DD2B53AD7400C02D17 /* kwrite_dup.c */; };
 		D5BF82E12B53B09800C02D17 /* kread_kqueue_workloop_ctl.c in Sources */ = {isa = PBXBuildFile; fileRef = D5BF82DF2B53B09800C02D17 /* kread_kqueue_workloop_ctl.c */; };
 		D5BF82E32B53B5AC00C02D17 /* kwrite_sem_open.c in Sources */ = {isa = PBXBuildFile; fileRef = D5BF82E22B53B5AB00C02D17 /* kwrite_sem_open.c */; };
 		D5D2DDA82B47B85F00B62BED /* kread_IOSurface.c in Sources */ = {isa = PBXBuildFile; fileRef = D5D2DDA62B47B85F00B62BED /* kread_IOSurface.c */; };
-		D5D2DDB52B4832B600B62BED /* KernelPatchfinder in Frameworks */ = {isa = PBXBuildFile; productRef = D5D2DDB42B4832B600B62BED /* KernelPatchfinder */; };
-		D5D2DDB82B4832E600B62BED /* bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D2DDB72B4832E600B62BED /* bridge.swift */; };
 		D5D2DDCE2B4835E000B62BED /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D2DDCD2B4835E000B62BED /* libz.tbd */; };
 		D5D2DDD02B4835E800B62BED /* libMobileGestalt.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D2DDCF2B4835E800B62BED /* libMobileGestalt.tbd */; };
 		D5D2DDD22B4835F100B62BED /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D2DDD12B4835F100B62BED /* CoreServices.framework */; };
 		D5EDCDFF2B72992400801C01 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EDCDF82B72992400801C01 /* AppDelegate.m */; };
-		D5EDCE002B72992400801C01 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EDCDF92B72992400801C01 /* SceneDelegate.m */; };
 		D5EDCE012B72992400801C01 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EDCDFC2B72992400801C01 /* ViewController.m */; };
 		D5EDCE022B72992400801C01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EDCDFE2B72992400801C01 /* main.m */; };
 		D5EDCE052B729B0100801C01 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D5EDCE032B729B0100801C01 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		868BDAB02B2E14260017CB10 /* libmeow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = libmeow.m; sourceTree = "<group>"; };
-		868BDAB22B2E14410017CB10 /* libmeow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libmeow.h; sourceTree = "<group>"; };
-		868BDAB82B2E1A840017CB10 /* meowfinder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = meowfinder.h; sourceTree = "<group>"; };
-		868BDAB92B2E1A890017CB10 /* meowfinder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = meowfinder.m; sourceTree = "<group>"; };
 		86A48A6B2B2B49CD005D1639 /* kfd-meow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "kfd-meow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		86A48A7A2B2B49CE005D1639 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		86A48A7F2B2B49CE005D1639 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -104,21 +97,28 @@
 		D5123A032B4C40BD0040BF9D /* pplrw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pplrw.h; sourceTree = "<group>"; };
 		D5123A042B4C41040040BF9D /* IOSurface_Primitives.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IOSurface_Primitives.h; sourceTree = "<group>"; };
 		D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IOSurface_Primitives.m; sourceTree = "<group>"; };
-		D51A54602B66653D00F7EFDC /* troll.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = troll.h; sourceTree = "<group>"; };
-		D51A54612B66653D00F7EFDC /* troll.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = troll.m; sourceTree = "<group>"; };
+		D51491C42B7F4E35007C8897 /* iokit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iokit.h; sourceTree = "<group>"; };
 		D51A546C2B66961000F7EFDC /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = usr/lib/libarchive.tbd; sourceTree = SDKROOT; };
 		D51A54742B669D6C00F7EFDC /* MobileContainerManager.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MobileContainerManager.framework; sourceTree = "<group>"; };
-		D51A54862B66BB9A00F7EFDC /* PersistenceHelper_Embedded */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PersistenceHelper_Embedded; sourceTree = SOURCE_ROOT; };
 		D51A548E2B6BC81500F7EFDC /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
-		D51A54962B6F513F00F7EFDC /* meow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = meow.h; sourceTree = "<group>"; };
-		D51A54972B6F53A200F7EFDC /* meow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = meow.m; sourceTree = "<group>"; };
+		D542084E2B9F203E0048428C /* iosurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iosurface.c; sourceTree = "<group>"; };
+		D542084F2B9F203E0048428C /* exploit_utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exploit_utilities.h; sourceTree = "<group>"; };
+		D54208502B9F203E0048428C /* exploit_utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = exploit_utilities.c; sourceTree = "<group>"; };
+		D54208512B9F203E0048428C /* iosurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iosurface.h; sourceTree = "<group>"; };
+		D54208522B9F203E0048428C /* kernel_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kernel_memory.h; sourceTree = "<group>"; };
+		D54208532B9F203E0048428C /* offsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = offsets.h; sourceTree = "<group>"; };
+		D54208542B9F203E0048428C /* kernel_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kernel_memory.c; sourceTree = "<group>"; };
+		D54208552B9F203E0048428C /* exploit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = exploit.m; sourceTree = "<group>"; };
+		D54208562B9F203E0048428C /* exploit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exploit.h; sourceTree = "<group>"; };
+		D54208572B9F203E0048428C /* offsets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = offsets.m; sourceTree = "<group>"; };
+		D54208602BA02DFE0048428C /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		D54208612BA02DFE0048428C /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		D54208722BA1A9EB0048428C /* sockport2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sockport2.h; sourceTree = "<group>"; };
 		D54990D52B42C7C3003B3486 /* landa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = landa.h; sourceTree = "<group>"; };
 		D54990D62B42C7C3003B3486 /* landa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = landa.c; sourceTree = "<group>"; };
 		D56FB6A62B4A66DD00A48CA4 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		D576DF702B5FFE23004C3933 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = utils.c; sourceTree = "<group>"; };
 		D576DF712B5FFE23004C3933 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
-		D5B5FF842B622AC200B53629 /* kcall.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = kcall.m; sourceTree = "<group>"; };
-		D5B5FF852B622AC200B53629 /* kcall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kcall.h; sourceTree = "<group>"; };
 		D5BF82C12B50242F00C02D17 /* libdimentio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libdimentio.h; sourceTree = "<group>"; };
 		D5BF82C22B50242F00C02D17 /* patchfinder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = patchfinder.m; sourceTree = "<group>"; };
 		D5BF82C32B50242F00C02D17 /* libdimentio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libdimentio.c; sourceTree = "<group>"; };
@@ -132,15 +132,12 @@
 		D5D2DDA62B47B85F00B62BED /* kread_IOSurface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = kread_IOSurface.c; sourceTree = "<group>"; };
 		D5D2DDA72B47B85F00B62BED /* kread_IOSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kread_IOSurface.h; sourceTree = "<group>"; };
 		D5D2DDB62B4832E500B62BED /* kfd-meow-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "kfd-meow-Bridging-Header.h"; sourceTree = "<group>"; };
-		D5D2DDB72B4832E600B62BED /* bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bridge.swift; sourceTree = "<group>"; };
 		D5D2DDCB2B4835D900B62BED /* libc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libc.tbd; path = usr/lib/libc.tbd; sourceTree = SDKROOT; };
 		D5D2DDCD2B4835E000B62BED /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		D5D2DDCF2B4835E800B62BED /* libMobileGestalt.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libMobileGestalt.tbd; path = usr/lib/libMobileGestalt.tbd; sourceTree = SDKROOT; };
 		D5D2DDD12B4835F100B62BED /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		D5EDCDF82B72992400801C01 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		D5EDCDF92B72992400801C01 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		D5EDCDFA2B72992400801C01 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		D5EDCDFB2B72992400801C01 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		D5EDCDFC2B72992400801C01 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		D5EDCDFD2B72992400801C01 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		D5EDCDFE2B72992400801C01 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -155,8 +152,7 @@
 				D5D2DDD22B4835F100B62BED /* CoreServices.framework in Frameworks */,
 				D5D2DDD02B4835E800B62BED /* libMobileGestalt.tbd in Frameworks */,
 				D5D2DDCE2B4835E000B62BED /* libz.tbd in Frameworks */,
-				D51A54922B6BCE9E00F7EFDC /* IOKit.framework in Frameworks */,
-				D5D2DDB52B4832B600B62BED /* KernelPatchfinder in Frameworks */,
+				D54208852BA1AFA40048428C /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,31 +179,16 @@
 		86A48A6D2B2B49CD005D1639 /* kfd-meow */ = {
 			isa = PBXGroup;
 			children = (
-				86A48A882B2B4A0A005D1639 /* libkfd */,
-				D5BF82C02B50242F00C02D17 /* kpf */,
-				86A48A872B2B4A0A005D1639 /* libkfd.h */,
-				86A48ABB2B2B4A0A005D1639 /* libkfd.m */,
-				D51A54962B6F513F00F7EFDC /* meow.h */,
-				D51A54972B6F53A200F7EFDC /* meow.m */,
-				868BDAB22B2E14410017CB10 /* libmeow.h */,
-				868BDAB02B2E14260017CB10 /* libmeow.m */,
-				868BDAB82B2E1A840017CB10 /* meowfinder.h */,
-				868BDAB92B2E1A890017CB10 /* meowfinder.m */,
-				D5123A032B4C40BD0040BF9D /* pplrw.h */,
-				D5123A012B4C40B10040BF9D /* pplrw.m */,
-				D5123A042B4C41040040BF9D /* IOSurface_Primitives.h */,
-				D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */,
-				D5B5FF852B622AC200B53629 /* kcall.h */,
-				D5B5FF842B622AC200B53629 /* kcall.m */,
-				D51A54602B66653D00F7EFDC /* troll.h */,
-				D51A54612B66653D00F7EFDC /* troll.m */,
+				D542084B2B9F1E200048428C /* kfd */,
+				D542084D2B9F1E350048428C /* sockport2 */,
+				D542084C2B9F1E290048428C /* dmaFail */,
 				D576DF712B5FFE23004C3933 /* utils.h */,
 				D576DF702B5FFE23004C3933 /* utils.c */,
-				D5D2DDB72B4832E600B62BED /* bridge.swift */,
+				D51491C42B7F4E35007C8897 /* iokit.h */,
 				D5EDCDFA2B72992400801C01 /* AppDelegate.h */,
 				D5EDCDF82B72992400801C01 /* AppDelegate.m */,
-				D5EDCDFB2B72992400801C01 /* SceneDelegate.h */,
-				D5EDCDF92B72992400801C01 /* SceneDelegate.m */,
+				D54208602BA02DFE0048428C /* SceneDelegate.h */,
+				D54208612BA02DFE0048428C /* SceneDelegate.m */,
 				D5EDCDFD2B72992400801C01 /* ViewController.h */,
 				D5EDCDFC2B72992400801C01 /* ViewController.m */,
 				D5EDCDFE2B72992400801C01 /* main.m */,
@@ -215,7 +196,6 @@
 				86A48A7A2B2B49CE005D1639 /* Assets.xcassets */,
 				86A48A7F2B2B49CE005D1639 /* Info.plist */,
 				D5D2DDB62B4832E500B62BED /* kfd-meow-Bridging-Header.h */,
-				D51A54862B66BB9A00F7EFDC /* PersistenceHelper_Embedded */,
 			);
 			path = "kfd-meow";
 			sourceTree = "<group>";
@@ -351,6 +331,46 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		D542084B2B9F1E200048428C /* kfd */ = {
+			isa = PBXGroup;
+			children = (
+				86A48A882B2B4A0A005D1639 /* libkfd */,
+				D5BF82C02B50242F00C02D17 /* kpf */,
+				86A48A872B2B4A0A005D1639 /* libkfd.h */,
+				86A48ABB2B2B4A0A005D1639 /* libkfd.m */,
+			);
+			path = kfd;
+			sourceTree = "<group>";
+		};
+		D542084C2B9F1E290048428C /* dmaFail */ = {
+			isa = PBXGroup;
+			children = (
+				D5123A032B4C40BD0040BF9D /* pplrw.h */,
+				D5123A012B4C40B10040BF9D /* pplrw.m */,
+				D5123A042B4C41040040BF9D /* IOSurface_Primitives.h */,
+				D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */,
+			);
+			path = dmaFail;
+			sourceTree = "<group>";
+		};
+		D542084D2B9F1E350048428C /* sockport2 */ = {
+			isa = PBXGroup;
+			children = (
+				D542084F2B9F203E0048428C /* exploit_utilities.h */,
+				D54208502B9F203E0048428C /* exploit_utilities.c */,
+				D54208562B9F203E0048428C /* exploit.h */,
+				D54208552B9F203E0048428C /* exploit.m */,
+				D54208512B9F203E0048428C /* iosurface.h */,
+				D542084E2B9F203E0048428C /* iosurface.c */,
+				D54208522B9F203E0048428C /* kernel_memory.h */,
+				D54208542B9F203E0048428C /* kernel_memory.c */,
+				D54208532B9F203E0048428C /* offsets.h */,
+				D54208572B9F203E0048428C /* offsets.m */,
+				D54208722BA1A9EB0048428C /* sockport2.h */,
+			);
+			path = sockport2;
+			sourceTree = "<group>";
+		};
 		D5BF82C02B50242F00C02D17 /* kpf */ = {
 			isa = PBXGroup;
 			children = (
@@ -379,7 +399,6 @@
 			);
 			name = "kfd-meow";
 			packageProductDependencies = (
-				D5D2DDB42B4832B600B62BED /* KernelPatchfinder */,
 			);
 			productName = "kfd-meow";
 			productReference = 86A48A6B2B2B49CD005D1639 /* kfd-meow.app */;
@@ -410,7 +429,6 @@
 			);
 			mainGroup = 86A48A622B2B49CD005D1639;
 			packageReferences = (
-				D5D2DDB32B4832B600B62BED /* XCLocalSwiftPackageReference "KernelPatchfinder" */,
 			);
 			productRefGroup = 86A48A6C2B2B49CD005D1639 /* Products */;
 			projectDirPath = "";
@@ -427,7 +445,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D5EDCE052B729B0100801C01 /* Main.storyboard in Resources */,
-				D51A54872B66BB9A00F7EFDC /* PersistenceHelper_Embedded in Resources */,
 				86A48A7B2B2B49CE005D1639 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -439,18 +456,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D54208592B9F203E0048428C /* exploit_utilities.c in Sources */,
+				D542085A2B9F203E0048428C /* kernel_memory.c in Sources */,
 				D5BF82C52B50242F00C02D17 /* patchfinder.m in Sources */,
 				D5123A022B4C40B10040BF9D /* pplrw.m in Sources */,
 				D5BF82E32B53B5AC00C02D17 /* kwrite_sem_open.c in Sources */,
 				D5123A062B4C41040040BF9D /* IOSurface_Primitives.m in Sources */,
-				D51A54982B6F53A200F7EFDC /* meow.m in Sources */,
+				D54208622BA02DFE0048428C /* SceneDelegate.m in Sources */,
 				86A48AC42B2B4A0A005D1639 /* krkw.c in Sources */,
 				D5BF82DE2B53AD7400C02D17 /* kwrite_dup.c in Sources */,
 				D5EDCE012B72992400801C01 /* ViewController.m in Sources */,
 				86A48ABD2B2B4A0A005D1639 /* perf.m in Sources */,
-				D5B5FF862B622AC200B53629 /* kcall.m in Sources */,
-				D5D2DDB82B4832E600B62BED /* bridge.swift in Sources */,
-				D51A54622B66653D00F7EFDC /* troll.m in Sources */,
 				D5EDCDFF2B72992400801C01 /* AppDelegate.m in Sources */,
 				D5BF82C62B50242F00C02D17 /* libdimentio.c in Sources */,
 				86A48ACB2B2B5451005D1639 /* kread_sem_open.c in Sources */,
@@ -458,14 +474,14 @@
 				86A48AC32B2B4A0A005D1639 /* physpuppet.c in Sources */,
 				D5D2DDA82B47B85F00B62BED /* kread_IOSurface.c in Sources */,
 				D54990D72B42C7C3003B3486 /* landa.c in Sources */,
-				D5EDCE002B72992400801C01 /* SceneDelegate.m in Sources */,
+				D542085B2B9F203E0048428C /* exploit.m in Sources */,
 				D5BF82E12B53B09800C02D17 /* kread_kqueue_workloop_ctl.c in Sources */,
 				86A48AC22B2B4A0A005D1639 /* smith.c in Sources */,
 				D576DF722B5FFE23004C3933 /* utils.c in Sources */,
-				868BDABA2B2E1A890017CB10 /* meowfinder.m in Sources */,
-				868BDAB12B2E14260017CB10 /* libmeow.m in Sources */,
 				86A48AC12B2B4A0A005D1639 /* kwrite_IOSurface.c in Sources */,
+				D54208582B9F203E0048428C /* iosurface.c in Sources */,
 				86A48AC52B2B4A0A005D1639 /* libkfd.m in Sources */,
+				D542085C2B9F203E0048428C /* offsets.m in Sources */,
 				86A48ABE2B2B4A0A005D1639 /* info.c in Sources */,
 				D5EDCE022B72992400801C01 /* main.m in Sources */,
 				86A48AC02B2B4A0A005D1639 /* IOSurface_shared.c in Sources */,
@@ -601,30 +617,39 @@
 		86A48A852B2B49CE005D1639 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/kfd-meow",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/kfd-meow/include";
 				INFOPLIST_FILE = "kfd-meow/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/kfd-meow/include",
+				);
 				MARKETING_VERSION = 1.0;
 				OTHER_CFLAGS = "-Os";
 				OTHER_LDFLAGS = (
@@ -647,30 +672,39 @@
 		86A48A862B2B49CE005D1639 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/kfd-meow",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/kfd-meow/include";
 				INFOPLIST_FILE = "kfd-meow/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/kfd-meow/include",
+				);
 				MARKETING_VERSION = 1.0;
 				OTHER_CFLAGS = "-Os";
 				OTHER_LDFLAGS = (
@@ -712,20 +746,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		D5D2DDB32B4832B600B62BED /* XCLocalSwiftPackageReference "KernelPatchfinder" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = KernelPatchfinder;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		D5D2DDB42B4832B600B62BED /* KernelPatchfinder */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KernelPatchfinder;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 86A48A632B2B49CD005D1639 /* Project object */;
 }

@@ -12,12 +12,11 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <sys/sysctl.h>
-#include "libkfd.h"
-#include "utils.h"
+#include "../utils.h"
+#include "../kfd/libkfd.h"
 #include "IOSurface_Primitives.h"
 
 int test_pplrw(void);
-int test_ktrr(void);
 
 void dma_perform(void (^block)(void));
 void dma_writephys64(uint64_t pa, uint64_t val);

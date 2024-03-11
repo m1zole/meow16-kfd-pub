@@ -118,17 +118,8 @@ mach_vm_machine_attribute(vm_map_t, mach_vm_address_t, mach_vm_size_t, vm_machin
 
 extern const mach_port_t kIOMasterPortDefault;
 
-static int kmem_fd = -1;
-static void *krw_0, *kernrw_0;
 static kread_func_t kread_buf;
-static task_t tfp0 = TASK_NULL;
-static uint64_t proc_struct_sz;
-static kwrite_func_t kwrite_buf;
-static krw_0_kread_func_t krw_0_kread;
-static krw_0_kwrite_func_t krw_0_kwrite;
-static bool has_proc_struct_sz, has_kalloc_array_decode, kalloc_array_decode_v2;
-static kaddr_t kbase, kernproc, proc_struct_sz_ptr, vm_kernel_link_addr, our_task;
-static size_t proc_task_off, proc_p_pid_off, task_itk_space_off, io_dt_nvram_of_dict_off, ipc_port_ip_kobject_off;
+static kaddr_t kbase, vm_kernel_link_addr;
 
 static uint32_t
 extract32(uint32_t val, unsigned start, unsigned len) {
@@ -138,13 +129,6 @@ extract32(uint32_t val, unsigned start, unsigned len) {
 static uint64_t
 sextract64(uint64_t val, unsigned start, unsigned len) {
     return (uint64_t)((int64_t)(val << (64U - len - start)) >> (64U - len));
-}
-
-static void
-kxpacd(kaddr_t *addr) {
-    if(t1sz_boot != 0) {
-        *addr |= ~((1ULL << (64U - t1sz_boot)) - 1U);
-    }
 }
 
 static size_t
@@ -626,19 +610,6 @@ pfinder_kernproc(pfinder_t pfinder) {
     }
     for(; sec_read_buf(pfinder.sec_text, ref, insns, sizeof(insns)) == KERN_SUCCESS; ref -= sizeof(*insns)) {
         if(IS_ADRP(insns[0]) && IS_LDR_X_UNSIGNED_IMM(insns[1]) && RD(insns[1]) == 3) {
-            return pfinder_xref_rd(pfinder, RD(insns[1]), ref, 0);
-        }
-    }
-    return 0;
-}
-
-static kaddr_t
-pfinder_proc_struct_sz_ptr(pfinder_t pfinder) {
-    uint32_t insns[3];
-    kaddr_t ref;
-
-    for(ref = pfinder_xref_str(pfinder, "panic: ticket lock acquired check done outside of kernel debugger @%s:%d", 0); sec_read_buf(pfinder.sec_text, ref, insns, sizeof(insns)) == KERN_SUCCESS; ref -= sizeof(*insns)) {
-        if(IS_ADRP(insns[0]) && IS_LDR_X_UNSIGNED_IMM(insns[1]) && IS_SUBS_X(insns[2]) && RD(insns[2]) == 1) {
             return pfinder_xref_rd(pfinder, RD(insns[1]), ref, 0);
         }
     }

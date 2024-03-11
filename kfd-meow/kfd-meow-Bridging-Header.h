@@ -3,6 +3,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "libkfd.h"
-#include "troll.h"
+#include "kfd/libkfd.h"
 #include "meow.h"
+#include "iokit.h"

